@@ -1,13 +1,17 @@
 <?php
 
-// use Illuminate\Http\Request;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ActivoController;
+use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\MantenimientoController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\ActivoEliminadoController;
-// use App\Models\Usuario;
+use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ComputerController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\CatalogController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +24,10 @@ use App\Http\Controllers\ActivoEliminadoController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
+// Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
+//     return $request->user();
+// });
+
 /*
 |--------------------------------------------------------------------------
 | Rutas API protegidas
@@ -31,125 +39,223 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::get('/ping', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'API responde correctamente'
+    ]);
+    });
+
     /*
-    |--------------------------------------------------------------------------
-    | Rutas para gestión de usuarios
-    |--------------------------------------------------------------------------
-    | Solo usuarios autenticados pueden acceder.
-    | Dentro del controlador se validará el permiso (policy) para:
-    | - viewAny, view, create, update, delete
-    |--------------------------------------------------------------------------
+    ┌──────────────────────────────────────────────────┐
+    │            Dashboard managment routes            │
+    ├──────────────────────────────────────────────────┤
+    | Only authenticated users.                        │
+    | Apply policies by rol.                           │
+    └──────────────────────────────────────────────────┘
+    */
+
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index']);
+
+    });
+
+        /*
+    ┌──────────────────────────────────────────────────┐
+    │            Companies managment routes            │
+    ├──────────────────────────────────────────────────┤
+    | Only authenticated users.                        │
+    | Apply policies by rol.                           │
+    └──────────────────────────────────────────────────┘
+    */
+
+    Route::prefix('companies')->group(function () {
+
+        Route::get('/', [CompanyController::class, 'index']);
+
+        Route::post('/', [CompanyController::class, 'store']);
+
+        Route::patch('/{company}', [CompanyController::class, 'update']);
+
+        Route::delete('/{company}', [CompanyController::class, 'delete']); // Pending
+
+        /*
+         ┌──────────────────────────────────────────────────┐
+         │            Locations managment routes            │
+         └──────────────────────────────────────────────────┘
+        */
+
+        Route::get('/{company}/locations', [LocationController::class, 'index']);
+
+        Route::post('/{company}/locations', [LocationController::class, 'store']);
+
+        Route::patch('locations/{location}', [LocationController::class, 'update']);
+
+        Route::delete('locations/{location}', [LocationController::class, 'delete']);
+
+    });
+
+    /*
+    ┌──────────────────────────────────────────────────┐
+    │               User managment routes              │
+    ├──────────────────────────────────────────────────┤
+    | Only authenticated users.                        │
+    | Apply policies by rol.                           │
+    └──────────────────────────────────────────────────┘
     */
      
-    Route::prefix('usuarios')->group(function () {
+    Route::prefix('users')->group(function () {
 
-        // Ver todos los usuarios (solo técnicos o administradores)
-        Route::get('/', [UsuarioController::class, 'index']);
+        // Show all users (solo técnicos o administradores)
+        Route::get('/', [UserController::class, 'index']);
 
-        // Crear un usuario nuevo (solo tecnicos o administradores)
-        Route::post('/register', [UsuarioController::class, 'store']); //OK
+        // Show users from X company
+        // Route::get('/{company}', [UserController::class, 'showByEmpresa']);
 
-        // Ver usuario por cedula (tecnicos, administradores o el propio usuario)
-        Route::get('/{cedula}', [UsuarioController::class, 'show']);
+        // Create new user (solo tecnicos o administradores)
+        Route::post('/register', [UserController::class, 'store']); 
 
-        // Actualizar usuario (solo técnicos o administradores)
-        Route::put('/{cedula}', [UsuarioController::class, 'update']);
-        Route::patch('/{cedula}', [UsuarioController::class, 'update']);
+        // Show user information (tecnicos, administradores o el propio usuario)
+        Route::get('/me', [UserController::class, 'me']);
 
-        // Eliminar activo (solo administradores)
-        Route::delete('/{cedula}', [UsuarioController::class, 'destroy']);
+        Route::patch('/me', [UserController::class, 'updateMe']);
+
+        // Show user information (tecnicos, administradores o el propio usuario)
+        Route::get('/{user}', [UserController::class, 'show']);
+
+        // Update user (solo técnicos o administradores)
+        // Route::put('/{user}', [UserController::class, 'update']); 
+        Route::patch('/{user}', [UserController::class, 'update']);
+
+        // Delete user (solo administradores)
+        Route::delete('/{user}', [UserController::class, 'destroy']);
     });
 
     /*
-    |--------------------------------------------------------------------------
-    | Rutas para gestión de activos
-    |--------------------------------------------------------------------------
-    | Solo usuarios autenticados pueden acceder.
-    | Dentro del controlador se validará el permiso (policy) para:
-    | - viewAny, view, create, update, delete
-    |--------------------------------------------------------------------------
+    ┌──────────────────────────────────────────────────┐
+    │               Asset managment routes             │
+    ├──────────────────────────────────────────────────┤
+    │ Only autenticated users.                         │
+    │ Apply policies by rol.                           │
+    └──────────────────────────────────────────────────┘
     */
 
-    Route::prefix('activos')->group(function () {
+    Route::prefix('assets')->group(function () { 
 
-        // Ver todos los activos (solo técnicos o administradores)
-        Route::get('/', [ActivoController::class, 'index']);
+        // Ver todos los activos (técnicos o administradores)
+        Route::get('/', [AssetController::class, 'index']);
 
-        // Crear un activo nuevo (solo técnicos)
-        Route::post('/', [ActivoController::class, 'store']);
+        // show assets from "x" company
+        // Route::get('/{company}', [AssetController::class, 'companyAssets']); //its not necesary, maybe
 
-        // Ver activo por empresa (solo tecnicos o administradores)
-        Route::get('/{id_empresa}', [ActivoController::class, 'showByEmpresa']);
+        // Crear un activo nuevo (técnicos o administradores)
+        Route::post('/', [AssetController::class, 'store']);
 
-        // Ver activo por id_activo + id_empresa (todos con permiso de lectura)
-        Route::get('/{id_empresa}/{id_activo}', [ActivoController::class, 'show']);
+        // Actualizar información del activo
+        // Route::put('/{asset}', [AssetController::class, 'update']);
+        Route::patch('/{asset}', [AssetController::class, 'update']);
 
-        // Actualizar activo (solo técnicos o administradores)
-        Route::put('/{id_empresa}/{id_activo}', [ActivoController::class, 'update']);
-        Route::patch('/{id_empresa}/{id_activo}', [ActivoController::class, 'update']);
+        /*
+          ┌───────────────────────────────┐
+          │ asset maintenance             │
+          └───────────────────────────────┘
+        */
 
-        // Eliminar activo y mover a activos eliminados (solo administradores y tecnicos)
-        Route::delete('/{id_empresa}/{id_activo}', [ActivoController::class, 'destroy']);
+        // Show all maintenances
+        Route::get('/maintenances', [MaintenanceController::class, 'index']);
 
-        /* Mantenimientos del activo */
-        // Ver todos los mantenimientos
-        Route::get('/{id_empresa}/{id_activo}/mantenimientos', [MantenimientoController::class, 'showByActivo']);
+        // Show all maintenances from asset
+        Route::get('/maintenances/{asset}', [MaintenanceController::class, 'showAsset']);
+
+        // Register maintenance
+        Route::post('/maintenances/{asset}', [MaintenanceController::class, 'store']);
+
+        // Show specific maintenance
+        Route::get('/maintenances/{maintenance}', [MaintenanceController::class, 'show']);
+        
+        /*
+            ┌──────────────────────────────────────────────────┐
+            │    Specific asset: Computer managment routes     │
+            └──────────────────────────────────────────────────┘
+        */
+
+        Route::prefix('computers')->group(function () { 
+
+            /*
+                ┌──────────────────────────────────────────────────┐
+                │              Computers catalog routes.           │
+                └──────────────────────────────────────────────────┘
+            */
+            
+            Route::prefix('catalog')->group(function () { 
+
+                // Get computer catalog
+                Route::get('/', [CatalogController::class, 'index']);
+
+                // Insert model in the catalog
+                Route::post('/', [CatalogController::class, 'store']);
+
+                // Update model in the catalog
+                Route::patch('/{computermodel}', [CatalogController::class, 'update']);
+
+                /*
+                    ┌───────────────────────────────┐
+                    │ components catalog            │
+                    └───────────────────────────────┘
+                */
+
+                // Get brands catalog
+                Route::get('/brands', [CatalogController::class, 'brands']);
+
+                
+                // Get processors catalog
+                Route::get('/processors', [CatalogController::class, 'processors']);
+
+                // Get memories catalog
+                Route::get('/memories', [CatalogController::class, 'memories']);
+
+                // Get hard disks catalog
+                Route::get('/disks', [CatalogController::class, 'disks']);
+
+                // Get licenses catalog
+                Route::get('/licenses', [CatalogController::class, 'licenses']);
+
+            });
+
+            // Show all computers (solo tecnicos o administradores)
+            Route::get('/', [ComputerController::class, 'index']);
+
+            // Assign user to computer (solo tecnicos o administradores)
+            Route::get('/assign/{user}', [ComputerController::class, 'assignUser']);
+
+            // Show user assets (Todos los usuarios)
+            Route::get('/{user}', [ComputerController::class, 'me']);
+
+            // Show specific computer (todos con permiso de lectura)
+            Route::get('/{asset}', [ComputerController::class, 'show']);
+
+            // Update computer information and register changes in history (solo técnicos o administradores)
+            // Route::put('/computers/{computer}', [ComputerController::class, 'update']);
+            Route::patch('/{computer}', [ComputerController::class, 'update']);
+
+            // Delete computer and register on deletion history (solo administradores o tecnicos)
+            Route::delete('/{computer}', [ComputerController::class, 'destroy']);
+
+        });
+    });
+
+    
+
+    Route::prefix('audit')->group(function () { 
 
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Rutas para gestión de mantenimientos
-    |--------------------------------------------------------------------------
-    | Dentro del controlador se validará el permiso (policy) para:
-    | - viewAny, view, create, update, delete
-    |--------------------------------------------------------------------------
-    */
-     
-    Route::prefix('mantenimientos')->group(function () {
-
-        // Ver todos los mantenimientos de un activo (solo técnicos o administradores)
-        Route::get('/', [MantenimientoController::class, 'index']);
-
-        // Ver mantenimiento por id (tecnicos, administradores o el propio usuario)
-        Route::get('/{id_manten}', [MantenimientoController::class, 'show']);
-
-        // Registrar un nuevo mantenimiento (tecnicos)
-        Route::post('/', [MantenimientoController::class, 'register']);
-
-        // Actualizar mantenimiento (solo técnicos o administradores)
-        Route::put('/{id_manten}', [UsuarioController::class, 'update']);
-        Route::patch('/{id_manten}', [UsuarioController::class, 'update']);
-
-        // Eliminar activo (solo técnicos administradores)
-        Route::delete('/{id_manten}', [UsuarioController::class, 'destroy']);
-    });
 
     /*
-    |--------------------------------------------------------------------------
-    | Rutas para gestión de activos eliminados
-    |--------------------------------------------------------------------------
-    | Dentro del controlador se validará el permiso (policy) para:
-    | - viewAny, view, create, update, delete
-    |--------------------------------------------------------------------------
+    ┌───────────────────────────────┐
+    │       end session             │
+    └───────────────────────────────┘
     */
 
-    Route::prefix('eliminados')->group(function () {
-
-        // Ver todos los activos eliminados (solo técnicos o administradores)
-        Route::get('/', [ActivoEliminadoController::class, 'index']);
-
-        // Ver activo eliminado especifico por id de eliminación (tecnicos, administradores)
-        Route::get('/{id_eliminado}', [ActivoEliminadoController::class, 'show']);
-
-        // Eliminar definitivamente un activo (solo técnicos administradores)
-        Route::delete('/{id_eliminado}', [UsuarioController::class, 'destroy']);
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Rutas para cerrar sesión
-    |--------------------------------------------------------------------------
-    */
     Route::post('/logout', [AuthController::class, 'logout']);
 });

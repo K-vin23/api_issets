@@ -1,8 +1,40 @@
 services:
   - type: web
-    name: laravel-api
+    name: api-issets
     env: docker
     plan: free
-    region: oregon
-    buildCommand: ""
-    startCommand: ""
+    branch: main
+    dockerfilePath: ./DockerFile
+    autoDeploy: true
+    envVars:
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://<tu-app>.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: <nombre_de_tu_db_render>
+          property: host
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        fromDatabase:
+          name: <nombre_de_tu_db_render>
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: <nombre_de_tu_db_render>
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: <nombre_de_tu_db_render>
+          property: password
+databases:
+  - name: <nombre_de_tu_db_render>
+    plan: free

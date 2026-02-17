@@ -1,6 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use App\Http\Controllers\ActivoController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MantenimientoController;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\ActivoEliminadoController;
+use App\Http\Controllers\EmpresaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +20,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/sanctum/csrf-cookie', function () {
+//     return response()->noContent();
+// });
+
+
+// Route::get('/', function () {
+//     return view('welcome');
+// });
