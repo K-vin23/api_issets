@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\SearchRequest;
 // Services
 use App\Services\UserService;
 // Resources
@@ -34,12 +35,31 @@ class UserController extends Controller
         return UserResource::collection($users);
     }
 
+    public function search(SearchRequest $request){
+        $this->authorize('viewAny', User::class);
+
+        $users = $this->userService->search($request->validated());
+        return response()->json([
+            'data' => $users
+        ], 200);
+    }
+
     public function show(User $user) {
         $this->authorize('view', $user);
 
         $user = $this->userService->show($user);
 
         return new UserResource($user);
+    }
+
+    public function showTech(){
+        $this->authorize('viewAny', User::class);
+
+        $techs = $this->userService->technicians();
+
+        return response()->json([
+            $techs
+        ], 200);
     }
 
     public function me(Request $request) {

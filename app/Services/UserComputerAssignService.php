@@ -2,9 +2,14 @@
 
 namespace App\Services;
 
+// Enums
+use App\Enums\AssignmentStatus;
 // Models
 use App\Models\User;
 use App\Models\Computer;
+use App\Models\ComputerUsersHistory;
+//Utilities
+use Illuminate\Support\Facades\DB;
 
 class UserComputerAssignService 
 {
@@ -12,9 +17,8 @@ class UserComputerAssignService
     public function assignUser(Computer $computer, int $assignedId, int $assignedBy) {
         DB::transaction(function () use ($computer, $assignedId, $assignedBy) {
 
-            // Invalidate previous active assignments
-            $computer->userHistory()->where('status', assignmentStatus::ACTIVE)->update(['status' => assignmentStatus::INACTIVE, 'unassigmentDate' => now()]);
-
+            // Invalidate previous active assignments 
+            // $computer->userHistory()->where('status', assignmentStatus::ACTIVE->value)->update(['status' => assignmentStatus::INACTIVE->value, 'unassigmentdate' => now()]);
             // obtain user info
             $user = User::findOrFail($assignedId);
             
@@ -27,7 +31,8 @@ class UserComputerAssignService
                 'userId'     => $user->userId,
                 'userName'   => $user->getFullName(),
                 'assignmentDate' => now(),
-                'status' => AssignmentStatus::ACTIVE,
+                'status' => AssignmentStatus::ACTIVE->value,
+                'unnasigmentdate'   => null
             ]);
         });
     }
@@ -43,10 +48,10 @@ class UserComputerAssignService
     public function unassign(Computer $computer, int $performedBy) {
         DB::transaction(function() use ($computer, $performedBy) {
             $computer->userHistory()
-            ->where('status', AssignmentStatus::ACTIVE)
+            ->where('status', AssignmentStatus::ACTIVE->value)
             ->update([
-                'status'           => AssignmentStatus::INACTIVE,
-                'unassignmentDate' => now()
+                'status'           => AssignmentStatus::INACTIVE->value,
+                'unassignmentdate' => now()
             ]);
 
             $computer->update([
@@ -55,4 +60,6 @@ class UserComputerAssignService
             ]);
         });
     }
+
+
 }

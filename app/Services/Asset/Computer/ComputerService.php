@@ -9,8 +9,10 @@ use App\Models\User;
 use App\Models\Maintenance;
 use App\Models\ComputerMemory;
 use App\Models\ComputerDisk;
+use App\Models\ComputerLicense;
 use App\Models\ComputerModelMemory;
 use App\Models\ComputerModelDisk;
+use App\Models\RemovedAssetHistory;
 //Enums
 use App\Enums\AssignmentStatus;
 //Services
@@ -30,26 +32,50 @@ class ComputerService
     ){}
 
     public function index(array $filters = [], int $perPage = 15): LengthAwarePaginator {
-        
         //filters
         return Computer::query()
         ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
         ->when($filters['areaId'] ?? null, fn($q, $v) => $q->area($v))
-        ->when($filters['modelId'] ?? null, fn($q, $v) => $q->model($v))
-        ->when($filters['search'] ?? null, fn($q, $v) => $q->search($v))
+        ->when($filters['status'] ?? null, function($q, $v) {
+            if($v === 'Asignado') {
+                $q->whereNotNull('assignedUser');
+            }
+
+            if($v === 'Almacen') {
+                $q->whereNull('assignedUser');
+            }
+        })
+        ->when($filters['search'] ?? null, function($q, $v){
+            $q->where(function($query) use ($v) {
+                $query->where('internalId', 'ILIKE', "%$v%")
+                    ->orWhereHas('computerModel', fn($m) => $m->search($v));
+            });
+        })
         ->with([
-            'area',
             'computerModel',
             'computerModel.computerBrand',
-            'computerModel.processor',
-            'assignedUser',
-            'assignedByUser',
-            'asset',
             'asset.company',
             'asset.type',
         ])
         ->paginate($perPage);
         
+    }
+
+    public function show(Computer $computer){
+        return $computer->load([
+            'area',
+            'computerModel',
+            'computerModel.computerBrand',
+            'computerModel.processor',
+            'userAssigned',
+            'assignedByUser',
+            'asset',
+            'asset.company',
+            'asset.type',
+            'memories.memory',
+            'disks.disk',
+            'licenses.license'
+        ]);
     }
 
     public function create(Asset $asset, array $data): void {
@@ -66,15 +92,15 @@ class ComputerService
 
             $computerId = $asset->computer->computerId;
 
-            $this->addModelComponents($computerId, $data['modelId']);
+            $this->addModelComponents($computerId, $data['memories'], $data['disks'], $data['licenses']);
         });
     }
 
-    public function createWithAssignment(Asset $asset, array $data, int $assignedUser, int $assignedBy): void
+    public function createWithAssignment(Asset $asset, array $data, int $assignedBy): void
     {
-        $computer = $asset->computer;
         $this->create($asset, $data);
-        $this->assignService->assignUser($computer, $assignedUser, $assignedBy);
+        $computer = $asset->computer;
+        $this->assignService->assignUser($computer, $data['assignedUser'], $assignedBy);
     }
 
     public function userComputers(int $userId): Collection {
@@ -90,48 +116,109 @@ class ComputerService
     {
         DB::transaction(function () use ($computer, $data) {
 
-            $computer->update([
-                'internalId' => $data['internalId'] ?? $computer->internalId,
-                'areaId'     => $data['invoice'] ?? $computer->areaId,
-                'modelId'    => $data['modelId'] ?? $computer->modelId
+            $computer->load('asset');
+
+            $computer->asset->update([
+                'serialNumber'  => $data['serialNumber'] ?? $computer->asset->serialNumber,
+                'companyId'     => $data['companyId'] ?? $computer->asset->companyId,
+                'invoice'       => $data['invoice'] ?? $computer->asset->invoice,
+                'assetType'     => $data['assetType'] ?? $computer->asset->assetType,
+                'purchaseDate'  => $data['purchaseDate'] ?? $computer->asset->purchaseDate,
             ]);
 
-            if(isset($data['modelId'])) {
-                //Delete memorie(s) and disk(s) from the previous model
-                $computer->memories()->delete();
-                $computer->disks()->delete();
-                //Added the components from the right model
-                $this->addModelComponents($computer->computerId, $data['modelId']);
+            $computer->update([
+                'internalId'    => $data['internalId'] ?? $computer->internalId,
+                'networkName'   => $data['networkName'] ?? $computer->networkName,
+                'areaId'        => $data['areaId'] ?? $computer->areaId,
+                'modelId'       => $data['modelId'] ?? $computer->modelId,
+            ]);
+
+            $computerId = $computer->computerId;
+
+            if(isset($data['memories']) && !empty($data['memories'])) { 
+                ComputerMemory::where('computerId', $computerId)->delete();
+                foreach ($data['memories'] as $memory) {
+                    ComputerMemory::create([
+                        'computerId' => $computer->computerId,
+                        'memoryId'   => $memory['id']
+                    ]);
+                }
+            }
+            if(isset($data['disks']) && !empty($data['disks'])) {
+                ComputerDisk::where('computerId', $computerId)->delete();
+
+                foreach ($data['disks'] as $disk) {
+                    ComputerDisk::create([
+                        'computerId' => $computer->computerId,
+                        'diskId'   => $disk['id']
+                    ]);
+                }
+            }
+            if(isset($data['licenses']) && !empty($data['licenses'])) {
+                computerLicense::where('computerId', $computerId)->delete();
+
+                foreach ($data['licenses'] as $license) {
+                    ComputerLicense::create([
+                        'computerId' => $computer->computerId,
+                        'licenseId'  => $license['licenseId'],
+                        'licenseKey' => $license['licenseKey']
+                    ]);
+                }
             }
         });
     }
 
-    public function addModelComponents(int $computerId, int $modelId)
+    public function addModelComponents(int $computerId, array $memories, array $disks, array $licenses)
     {
-        $modelMemories = ComputerModelMemory::where('modelId', $modelId)->pluck('memoryId'); //obtain memories of the model
+        // Save memories
+        if (!empty($memories)) {
+            foreach ($memories as $memory) {
+                ComputerMemory::create([
+                    'computerId' => $computerId,
+                    'memoryId'   => $memory['id'],
+                ]);
+            }
+        }
 
-        ComputerMemory::insert(
-            $modelMemories->map(fn ($id) => [
-                'computerId' => $computerId,
-                'memoryId'   => $id
-            ])->toArray()
-        );
-        
-        $modelDisks = ComputerModelDisk::where('modelId', $modelId)->pluck('diskId'); //obtain disks of the model
+        // Save disks
+        if (!empty($disks)) {
+            foreach ($disks as $disk) {
+                ComputerDisk::create([
+                    'computerId' => $computerId,
+                    'diskId'     => $disk['id'],
+                ]);
+            }
+        }
 
-        ComputerDisk::insert(
-            $modelDisks->map(fn ($id) =>[
-                'computerId' => $computerId,
-                'diskId' => $id
-            ])->toArray()
-        );
+        // Save licenses (OFFICE and OS)
+        if(!empty($licenses)) {
+            foreach ($licenses as $license) {
+                ComputerLicense::create([
+                    'computerId' => $computerId,
+                    'licenseId'  => $license['licenseId'],
+                    'licenseKey' => $license['licenseKey']
+                ]);
+            }
+        }
     }
 
-    public function delete(Computer $computer, String $reason, int $performedBy): void //Asset is the root, but the user wants to delete the specific asset on frontend through the route 'DELETE asset/computer/{id}', consequently the respective computer controller calls this service and after call the assetDeletion
+    public function delete(Computer $computer, array $data, int $performedBy): void //Asset is the root, but the user wants to delete the specific asset on frontend through the route 'DELETE asset/computer/{id}', consequently the respective computer controller calls this service and after call the assetDeletion
     {
         $asset = $computer->asset;
-        $removed = $this->deleteAssetService->delete($asset, $performedBy); //create history in the service asset
-        $this->deleteComputerService->delete($computer, $removed, $reason, $performedBy); //Then, pass to the deletion service and delete computer, then asset
+        $removed = $this->deleteAssetService->delete($asset, $performedBy); //   [OK]   create history in the service asset
+        $this->deleteComputerService->delete($computer, $removed, $data, $performedBy); //Then, pass to the deletion service and delete computer, then asset
+        $this->assignService->unassign($computer, $performedBy); // [OK]
+
+    }
+
+    public function removed(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        return RemovedAssetHistory::query()
+        ->when($filters['search'] ?? null, fn($q, $v) => $q->search($v))
+        ->with([
+            'removedComputer'
+        ])
+        ->paginate($perPage);
 
     }
 

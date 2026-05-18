@@ -19,6 +19,11 @@ class Location extends Model
         'locationName'
     ];
 
+    // Scopes
+    public function scopeCity($query, $cityId) {
+        return $query->where('cityId', $cityId);
+    }
+
     // Relations
     public function company() {
         return $this->belongsTo(Company::class, 'companyId', 'companyId');

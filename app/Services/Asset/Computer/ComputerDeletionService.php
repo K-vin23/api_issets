@@ -5,17 +5,27 @@ namespace App\Services\Asset\Computer;
 use App\Models\Computer;
 use App\Models\RemovedComputerHistory;
 use App\Models\User;
+use App\Models\ComputerMemory;
+use App\Models\ComputerDisk;
+use App\Models\ComputerLicense;
 // Utilities
 use Illuminate\Support\Facades\DB;
 
 class ComputerDeletionService
 {
-    public function delete(Computer $computer, int $removed, string $reason, int $userId): void
+    public function delete(Computer $computer, int $removed, array $data, int $userId): void
     {
         $model = $computer->computerModel;
         $user = User::findOrFail($userId);
 
-        DB::transaction(function () use ($user, $model, $computer, $removed, $reason) {
+        DB::transaction(function () use ($user, $model, $computer, $removed, $data) {
+            // Inactive computer
+
+            $computer->update([
+                'isActive'  => false,
+            ]);
+
+            // Create register
             RemovedComputerHistory::create([
                 'remAssetId'        => $removed,
                 'internalId'        => $computer->internalId,
@@ -24,18 +34,12 @@ class ComputerDeletionService
                 'companyId'         => $computer->company->companyId,
                 'companyName'       => $computer->company->company,
                 'lastAssignedUser'  => $computer->assignedUser,
-                'userName'          => $computer->assignedUser->getFullName,
+                'userName'          => $computer->userAssigned->getFullName() ?? 'No asignado',
                 'lastUpdate'        => $computer->lastUpdate,
-                'removalReason'     => $reason,
+                'removalReason'     => $data['removalReason'],
                 'removedBy'         => $user->userId,
-                'remUserName'       => $user->getFullName()
-            ]);
-
-            $asset = $computer->asset;
-
-            //delete asset and computer
-            $computer->delete();
-            $asset->delete();
+                'remUserName'       => $user->getFullName(),
+            ]);            
         });
     }
 }

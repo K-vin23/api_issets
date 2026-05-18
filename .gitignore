@@ -17,3 +17,9 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+.DS_Store
+Thumbs.db
+composer.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

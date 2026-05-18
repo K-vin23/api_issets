@@ -16,14 +16,30 @@ class AssetType extends Model
         'typeId', 
         'assetType'
     ];
-    
-    // Relations
-    public function assets() {
-        return $this->hasMany(Asset::class, 'assetType', 'typeId');
-    }
 
     //Shortcuts
     public function isComputer(): bool {
-        return in_array($this->typeId, ['PORT', 'TORR', 'SFF'], true);
+        return in_array($this->typeId, ['LAP', 'SFF', 'TORR']);
+    }
+
+    public function isMonitor(): bool {
+        if($this->typeId === 'MON'){
+            return true;
+        } else {
+            return false;
+        };
+    }
+
+    public function isUps(): bool {
+        if($this->typeId === 'UPS'){
+            return true;
+        } else {
+            return false;
+        };
+    }
+
+     // Relations
+    public function assets() {
+        return $this->hasMany(Asset::class, 'typeId', 'typeId');
     }
 }

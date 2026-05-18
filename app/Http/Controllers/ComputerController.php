@@ -9,10 +9,14 @@ use App\Models\Asset;
 use App\Http\Requests\IndexComputerRequest;
 use App\Http\Requests\UpdateComputerRequest;
 use App\Http\Requests\AssignUserRequest;
+use App\Http\Requests\DeleteComputerRequest;
+use App\Http\Requests\RemovedComputerRequest;
 // Services
 use App\Services\Asset\Computer\ComputerService;
 // Resources
-use App\Http\Resources\ComputerResource;
+use App\Http\Resources\ComputerListResource;
+use App\Http\Resources\ComputerDetailResource;
+use App\Http\Resources\ComputerRemovedResource;
 
 class ComputerController extends Controller
 {
@@ -30,12 +34,20 @@ class ComputerController extends Controller
         $computers = $this->computerService->index($request->validated(), $request->integer('perPage', 15));
 
 
-        return ComputerResource::collection($computers);
+        return ComputerListResource::collection($computers);
+    }
+
+    public function show (Computer $computer) {
+        $this->authorize('view', $computer);
+
+        $computer = $this->computerService->show($computer);
+
+        return new ComputerDetailResource($computer);
     }
 
     public function me() {
 
-        $this->authorize('view', Asset::class);
+        $this->authorize('viewAny', Computer::class);
 
         $computers = $this->computerService->userComputers(auth()->id());
         
@@ -47,7 +59,7 @@ class ComputerController extends Controller
 
     public function update(UpdateComputerRequest $request, Computer $computer) {
 
-        $this->autorize('update', $computer);
+        $this->authorize('update', $computer);
 
         $this->computerService->update($computer, $request->validated());
 
@@ -73,11 +85,20 @@ class ComputerController extends Controller
         ], 200);
     }
 
-    public function applyChanges() {
+    public function delete(DeleteComputerRequest $request, Computer $computer) {
+        $this->authorize('delete', $computer);
 
+        $this->computerService->delete($computer, $request->validated(), auth()->id());
+
+        return response()->json(204);
     }
 
-    public function delete() {
-        
+    public function removed(RemovedComputerRequest $request) {
+        $this->authorize('viewAny', Computer::class);
+
+        $removed = $this->computerService->removed($request->validated(), $request->integer('perPage', 15));
+
+        return ComputerRemovedResource::collection($removed);
+
     }
 }

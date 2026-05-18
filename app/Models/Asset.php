@@ -9,21 +9,43 @@ class Asset extends Model
 {
     use HasFactory;
 
+    protected $table = 'assets';
     protected $primaryKey = 'assetId';
     public $timestamps = false; 
 
     protected $fillable = [
-        'serialNumber',
         'companyId',
-        'assetType',
+        'areaId',
+        'typeId',
+        'modelId',
+        'serialNumber',
+        'internalId',
         'invoice',
         'purchaseDate',
-        'registeredBy'
+        'networkName',
+        'assignedUser',
+        'details',
+        'lastUpdate',
+        'isActive',
+        'registeredBy',
+    ];
+
+    protected $casts = [
+        'purchaseDate' => 'date',
+        'lastUpdate' => 'date',
     ];
 
     //Shortcuts
-    public function isComputer(): bool { // Determine if the asset is a computer
+    public function isComputer(): bool {
         return $this->type?->isComputer() ?? false;
+    }
+
+    public function isMonitor(): bool { 
+        return $this->type?->isMonitor() ?? false;
+    }
+
+    public function isUps(): bool {
+        return $this->type?->isUps() ?? false;
     }
 
     // Scopes
@@ -36,19 +58,32 @@ class Asset extends Model
         return $query->where('assetType', $assetType);
     }
 
-    public function scopeSearch($query, string $term) {
-        return $query->where(function ($q) use($term) {
-            $q->where('serialNumber', 'ILIKE', "%$term%");
-        });
-    }
+    // public function scopeSearch($query, string $term) {
+    //     return $query->where(function ($q) use($term) {
+    //         $q->where('internalId', 'ILIKE', "%$term%")
+    //         ->orWhere('internalId', 'ILIKE')
+    //     });
+    // }
 
     // Relations
     public function company() {
         return $this->belongsTo(Company::class, 'companyId', 'companyId');
     }
 
+    public function area() {
+        return $this->belongsTo(Area::class, 'areaId', 'areaId');
+    }
+
     public function type() {
-        return $this->belongsTo(AssetType::class, 'assetType', 'typeId');
+        return $this->belongsTo(AssetType::class, 'typeId', 'typeId');
+    }
+
+    public function assetModels() {
+        return $this->belongsTo(Models::class, 'modelId', 'modelId');
+    }
+
+    public function assignedTo() {
+        return $this->belongsTo(User::class, 'assignedUser', 'userId');
     }
 
     public function registerUser() {
@@ -63,7 +98,15 @@ class Asset extends Model
         return $this->hasMany(ChangeAssetHistory::class, 'assetId', 'assetId');
     }
 
-    public function computer() {
-        return $this->hasOne(Computer::class, 'assetId', 'assetId');
+    public function usersHistory() {
+        return $this->hasMany(AssetAssignationHistory::class, 'assetId', 'assetId');
+    }
+
+    public function components() {
+        return $this->hasMany(AssetComponent::class, 'assetId', 'assetId');
+    }
+
+    public function licenses() {
+        return $this->hasMany(AssetLicense::class, 'assetId', 'assetId');
     }
 }

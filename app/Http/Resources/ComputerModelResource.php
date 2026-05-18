@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+// Resources
 use App\Http\Resources\ComputerBrandResource;
 use App\Http\Resources\ProcessorResource;
 use Illuminate\Http\Resources\Json\JsonResource;

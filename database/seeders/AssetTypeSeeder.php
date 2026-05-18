@@ -11,8 +11,13 @@ class AssetTypeSeeder extends Seeder
     public function run(): void
     {
         AssetType::create([
-            'typeId'    => 'PORT',
-            'assetType' => 'PORTATIL'
+            'typeId'    => 'LAP',
+            'assetType' => 'LAPTOP'
+        ]);
+
+        AssetType::create([
+            'typeId'    => 'SFF',
+            'assetType' => 'MINI-PC'
         ]);
 
         AssetType::create([
@@ -20,9 +25,15 @@ class AssetTypeSeeder extends Seeder
             'assetType' => 'TORRE'
         ]);
 
-        AssetType::create([
-            'typeId'    => 'SFF',
-            'assetType' => 'MINI-PC'
+        AssetType:: create([
+            'typeId'    => 'MON',
+            'assetType' => 'MONITOR'
         ]);
+
+        AssetType:: create([
+            'typeId'    => 'UPS',
+            'assetType' => 'UPS'
+        ]);
+
     }
 }

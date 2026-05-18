@@ -16,6 +16,8 @@ class UpdateAssetRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'internalId'    => 'sometimes|string|max:100',
+            'assignedUser'  => 'sometimes|required|integer|exists:users,userId',
             'serialNumber' => 'sometimes|string|max:200',
             'companyId' => 'sometimes|integer|exists:companies,companyId',
             'assetType' => 'sometimes|string|max:4|exists:asset_types,typeId',

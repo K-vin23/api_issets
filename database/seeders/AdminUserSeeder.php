@@ -12,7 +12,7 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'userId'         =>  1193228979,
+            'cedula'         =>  1193228976,
             'rolId'          =>  'ADM',
             'companyId'      =>  1,
             'firstname'      => 'KEVIN',

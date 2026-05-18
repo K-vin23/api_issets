@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Location;
 use App\Models\Company;
 // Requests
+use App\Http\Requests\IndexLocationRequest;
 use App\Http\Requests\StoreLocationRequest;
 use App\Http\Requests\UpdateLocationRequest;
 // Services
@@ -20,15 +21,15 @@ class LocationController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index(Company $company) {
+    public function index(Company $company, IndexLocationRequest $request) {
 
         $this->authorize('viewAny', $company);
 
-        $locations = $this->companyService->locations($company);
+        $locations = $this->companyService->locations($company, $request->validated());
 
         return response()->json([
             'data' => $locations
-        ]);
+        ], 200);
     }
 
     public function store(StoreLocationRequest $request, Company $company) {
@@ -39,7 +40,7 @@ class LocationController extends Controller
 
         return response()->json([
             'data' => $location
-        ]);
+        ], 201);
     }
 
     public function update(UpdateLocationRequest $request, Location $location) {
@@ -50,7 +51,7 @@ class LocationController extends Controller
 
         return response()->json([
             'data' => $location
-        ]);
+        ], 200);
     }
 
     public function delete() {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Computer;
-use App\Models\ComputerModel;
+use App\Models\Models;
 use App\Http\Requests\IndexCatalogRequest;
 use App\Http\Requests\StoreCatalogRequest;
 use App\Services\Asset\Computer\CatalogService;
@@ -21,29 +21,27 @@ class CatalogController extends Controller
 
     public function index(IndexCatalogRequest $request) {
 
-       $this->authorize('viewAny', ComputerModel::class);
+       $this->authorize('viewAny', Models::class);
 
         return response()->json(
             $this->catalogService->catalog($request->validated(), $request->integer('perPage', 15)) 
         );
     }
 
-    public function store(StoreCatalogModelRequest $request) {
+    public function store(StoreCatalogRequest $request) {
 
-        $this->authorize('create', ComputerModel::class);
-
-
+        $this->authorize('create', Models::class);
 
     }
 
     public function update() {
 
-        $this->authorize('update', ComputerModel::class);
+        $this->authorize('update', Models::class);
     }
 
     public function memories() {
 
-        $this->authorize('view', ComputerModel::class);
+        $this->authorize('viewAny', Models::class);
 
         return response()->json(
             $this->catalogService->memory()
@@ -52,7 +50,7 @@ class CatalogController extends Controller
 
     public function brands() {
 
-        $this->authorize('view', ComputerModel::class);
+        $this->authorize('viewAny', Models::class);
 
         return response()->json(
             $this->catalogService->brand()
@@ -62,7 +60,7 @@ class CatalogController extends Controller
 
     public function processors() {
 
-        $this->authorize('view', ComputerModel::class);
+        $this->authorize('viewAny', Models::class);
 
         return response()->json(
             $this->catalogService->processor()
@@ -72,7 +70,7 @@ class CatalogController extends Controller
 
     public function disks() {
 
-        $this->authorize('view', ComputerModel::class);
+        $this->authorize('viewAny', Models::class);
 
         return response()->json(
             $this->catalogService->disk()
@@ -82,7 +80,7 @@ class CatalogController extends Controller
 
     public function licenses() {
 
-        $this->authorize('view', ComputerModel::class);
+        $this->authorize('viewAny', Models::class);
 
         return response()->json(
             $this->catalogService->license()

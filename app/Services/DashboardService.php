@@ -45,14 +45,14 @@ class DashboardService
                 ->join('assets', 'assets.assetId', '=', 'maintenances.assetId')
                 ->join('asset_types', 'asset_types.typeId', '=', 'assets.assetType')
                 ->join('computers', 'computers.assetId', '=', 'assets.assetId')
-                ->join('computer_models', 'computer_models.modelId', '=', 'computers.modelId')
+                ->join('models', 'models.modelId', '=', 'computers.modelId')
                 ->when($filters['companyId'] ?? null, fn($q, $v) => $q->where('assets.companyId', $v))
                 ->whereBetween('maintenances.nextMaintenance', [now(), now()->addDays(30)])
                 ->orderBy('maintenances.nextMaintenance')
                 ->limit(5)
                 ->get([
                     'asset_types.assetType as assetType',
-                    DB::raw('computer_models."brandId" || \' \' || computer_models."modelFamily" || \' \' || computer_models."modelSerie"  as model'),
+                    DB::raw('models."brandId" || \' \' || models."modelFamily" || \' \' || models."modelSerie"  as model'),
                     'computers.internalId as internalId',
                 ]);
     }

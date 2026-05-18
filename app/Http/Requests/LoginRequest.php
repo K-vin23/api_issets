@@ -16,7 +16,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'userId' => 'required|integer',
+            'cedula' => 'required|integer',
             'pw_encrypt' => 'required|string'
         ];
     }
@@ -24,8 +24,8 @@ class LoginRequest extends FormRequest
      public function messages(): array
     {
         return [
-            'userId.required' => 'La cédula es obligatoria.',
-            'userId.integer' => 'La cédula debe ser un número entero.',
+            'cedula.required' => 'La cédula es obligatoria.',
+            'cedula.integer' => 'La cédula debe ser un número entero.',
             'pw_encrypt.required' => 'La contraseña es obligatoria.'
         ];
     }

@@ -30,15 +30,14 @@ class MaintenanceService
                 ->get();
     }
 
-    public function register(Asset $asset, array $data, int $userId): Maintenance
-    {
+    public function register(Asset $asset, array $data, int $userId): Maintenance{
         return DB::transaction(function () use ($asset, $data, $userId) {
 
             $maintenance = Maintenance::create([
                 'assetId'           => $asset->id,
                 'typeId'            => $data['type_id'],
                 'maintenanceDate'    => Carbon::parse($data['maintenanceDate']) ?? now(),
-                'nextMaintenance'    => $data['nextMaintenance'] ?? Carbon::parse($data['maintenanceDate'])->addMonthsNoOverflow(6),
+                // 'nextMaintenance'    => $data['nextMaintenance'] ?? Carbon::parse($data['maintenanceDate'])->addMonthsNoOverflow(6),
                 'tecId'              => $userId,
                 'observations'       => $data['observations']
             ]);
@@ -56,6 +55,18 @@ class MaintenanceService
             }
 
             return $maintenance;
+        });
+    }
+
+    public function autoMaintenance(Asset $asset, int $userId): Maintenance { // Automatic maintenance for change components in edit form
+        return DB::transaction(function () use ($asset, $userId) {
+            Maintenance::create([
+                'assetId'           => $asset->assetId,
+                'typeId'            => 'CORR',
+                'maintenanceDate'   => now(),
+                'tecId'             => $userId,
+                'observations'      => 'Actualización automática de componentes por medio de edición de activo'
+            ]);
         });
     }
 

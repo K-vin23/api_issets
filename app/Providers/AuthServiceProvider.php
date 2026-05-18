@@ -8,12 +8,14 @@ use App\Models\Computer;
 use App\Models\Maintenance;
 use App\Models\User;
 use App\Models\Company;
-use App\Models\ComputerModel;
+use App\Models\City;
+use App\Models\Models;
 use App\Policies\AssetPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\MaintenancePolicy;
 use App\Policies\ComputerPolicy;
 use App\Policies\CompanyPolicy;
+use App\Policies\CityPolicy;
 use App\Policies\CatalogPolicy;
 
 class AuthServiceProvider extends ServiceProvider
@@ -25,7 +27,8 @@ class AuthServiceProvider extends ServiceProvider
         Maintenance::class   => MaintenancePolicy::class,
         User::class          => UserPolicy::class,
         Company::class       => CompanyPolicy::class,
-        ComputerModel::class => CatalogPolicy::class 
+        City::class          => CityPolicy::class,
+        Models::class        => CatalogPolicy::class 
     ];
 
     public function boot(): void

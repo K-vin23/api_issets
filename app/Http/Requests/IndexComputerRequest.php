@@ -16,10 +16,10 @@ class IndexComputerRequest extends FormRequest
     {
         return [
             'companyId' => 'nullable|integer|exists:companies,companyId',
-            'areaId' => 'nullable|integer|exists:areas,areaId',
-            'modelId' => 'nullable|integer|exists:computer_models,modelId',
-            'search' => 'nullable|string|max:100',
-            'perPage' => 'nullable|integer|max:50',
+            'areaId'    => 'nullable|integer|exists:areas,areaId',
+            'status'    => 'nullable|string',
+            'search'    => 'nullable|string|max:100',
+            'perPage'   => 'nullable|integer|max:50',
         ];
     }
 }

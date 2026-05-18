@@ -9,6 +9,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\CatalogController;
 
@@ -60,7 +62,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
     });
 
-        /*
+    /*
+        ┌──────────────────────────────────────────────────┐
+        │                   Cities route                   │
+        └──────────────────────────────────────────────────┘
+    */
+
+    Route::get('/cities', [CityController::class, 'index']);
+
+    /*
+        ┌──────────────────────────────────────────────────┐
+        │                    Areas route                   │
+        └──────────────────────────────────────────────────┘
+    */
+
+    Route::get('/areas', [AreaController::class, 'index']);
+
+    /*
     ┌──────────────────────────────────────────────────┐
     │            Companies managment routes            │
     ├──────────────────────────────────────────────────┤
@@ -109,8 +127,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Show all users (solo técnicos o administradores)
         Route::get('/', [UserController::class, 'index']);
 
-        // Show users from X company
-        // Route::get('/{company}', [UserController::class, 'showByEmpresa']);
+        // Search by Id or fullname.
+        Route::get('/search', [UserController::class, 'search']);
+
+        // Show all technicians
+        Route::get('/technicians', [UserController::class, 'showTech']);
 
         // Create new user (solo tecnicos o administradores)
         Route::post('/register', [UserController::class, 'store']); 
@@ -145,68 +166,69 @@ Route::middleware('auth:sanctum')->group(function () {
         // Ver todos los activos (técnicos o administradores)
         Route::get('/', [AssetController::class, 'index']);
 
-        // show assets from "x" company
-        // Route::get('/{company}', [AssetController::class, 'companyAssets']); //its not necesary, maybe
+        // Show user assets (Todos los usuarios)
+        Route::get('/show/{user}', [AssetController::class, 'me']);
 
         // Crear un activo nuevo (técnicos o administradores)
         Route::post('/', [AssetController::class, 'store']);
 
-        // Actualizar información del activo
-        // Route::put('/{asset}', [AssetController::class, 'update']);
-        Route::patch('/{asset}', [AssetController::class, 'update']);
+        // Assign user to asset(solo tecnicos o administradores)
+        Route::post('/assign/{asset}', [AssetController::class, 'assignUser']);
 
-        /*
-          ┌───────────────────────────────┐
-          │ asset maintenance             │
-          └───────────────────────────────┘
-        */
+        // Removed assets routes
+        Route::prefix('removed')->group(function () { 
 
-        // Show all maintenances
-        Route::get('/maintenances', [MaintenanceController::class, 'index']);
+            // Show all removed assets
+            Route::get('/', [AssetController::class, 'removed']);
 
-        // Show all maintenances from asset
-        Route::get('/maintenances/{asset}', [MaintenanceController::class, 'showAsset']);
+        });
 
-        // Register maintenance
-        Route::post('/maintenances/{asset}', [MaintenanceController::class, 'store']);
+        // Maintenances routes
+        Route::prefix('maintenances')->group(function () { 
 
-        // Show specific maintenance
-        Route::get('/maintenances/{maintenance}', [MaintenanceController::class, 'show']);
-        
-        /*
-            ┌──────────────────────────────────────────────────┐
-            │    Specific asset: Computer managment routes     │
-            └──────────────────────────────────────────────────┘
-        */
+            // Show all maintenances
+            Route::get('/', [MaintenanceController::class, 'index']);
 
-        Route::prefix('computers')->group(function () { 
+            // Show all maintenances from asset
+            Route::get('/{asset}', [MaintenanceController::class, 'showAsset']);
+
+            // Register maintenance
+            Route::post('/{asset}', [MaintenanceController::class, 'store']);
+
+            // Show specific maintenance
+            Route::get('/{maintenance}', [MaintenanceController::class, 'show']);
+
+        });
+
+        // Show specific computer (todos con permiso de lectura)
+        Route::get('/{asset}', [AssetController::class, 'show']);
+
+        // Update computer information and register changes in history (solo técnicos o administradores)
+        // Route::put('/computers/{computer}', [ComputerController::class, 'update']);
+        Route::patch('/{computer}', [ComputerController::class, 'update']);
+
+        // Delete computer and register on deletion history (solo administradores o tecnicos)
+        Route::delete('/{computer}', [ComputerController::class, 'delete']);
 
             /*
                 ┌──────────────────────────────────────────────────┐
-                │              Computers catalog routes.           │
+                │              Assets catalog routes.              │
                 └──────────────────────────────────────────────────┘
             */
             
             Route::prefix('catalog')->group(function () { 
 
-                // Get computer catalog
-                Route::get('/', [CatalogController::class, 'index']);
+                // Get catalog
+                Route::get('/models', [CatalogController::class, 'index']);
 
                 // Insert model in the catalog
-                Route::post('/', [CatalogController::class, 'store']);
+                Route::post('/models', [CatalogController::class, 'store']);
 
                 // Update model in the catalog
-                Route::patch('/{computermodel}', [CatalogController::class, 'update']);
-
-                /*
-                    ┌───────────────────────────────┐
-                    │ components catalog            │
-                    └───────────────────────────────┘
-                */
+                Route::patch('/models/{models}', [CatalogController::class, 'update']);
 
                 // Get brands catalog
                 Route::get('/brands', [CatalogController::class, 'brands']);
-
                 
                 // Get processors catalog
                 Route::get('/processors', [CatalogController::class, 'processors']);
@@ -221,27 +243,76 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/licenses', [CatalogController::class, 'licenses']);
 
             });
+        
+        /*
+            ┌──────────────────────────────────────────────────┐
+            │    Specific asset: Computer managment routes     │
+            └──────────────────────────────────────────────────┘
+        */
 
-            // Show all computers (solo tecnicos o administradores)
-            Route::get('/', [ComputerController::class, 'index']);
+        // Route::prefix('computers')->group(function () { 
 
-            // Assign user to computer (solo tecnicos o administradores)
-            Route::get('/assign/{user}', [ComputerController::class, 'assignUser']);
+        //     /*
+        //         ┌──────────────────────────────────────────────────┐
+        //         │              Computers catalog routes.           │
+        //         └──────────────────────────────────────────────────┘
+        //     */
+            
+        //     Route::prefix('catalog')->group(function () { 
 
-            // Show user assets (Todos los usuarios)
-            Route::get('/{user}', [ComputerController::class, 'me']);
+        //         // Get computer catalog
+        //         Route::get('/', [CatalogController::class, 'index']);
 
-            // Show specific computer (todos con permiso de lectura)
-            Route::get('/{asset}', [ComputerController::class, 'show']);
+        //         // Insert model in the catalog
+        //         Route::post('/', [CatalogController::class, 'store']);
 
-            // Update computer information and register changes in history (solo técnicos o administradores)
-            // Route::put('/computers/{computer}', [ComputerController::class, 'update']);
-            Route::patch('/{computer}', [ComputerController::class, 'update']);
+        //         // Update model in the catalog
+        //         Route::patch('/{computermodel}', [CatalogController::class, 'update']);
 
-            // Delete computer and register on deletion history (solo administradores o tecnicos)
-            Route::delete('/{computer}', [ComputerController::class, 'destroy']);
+        //         /*
+        //             ┌───────────────────────────────┐
+        //             │ components catalog            │
+        //             └───────────────────────────────┘
+        //         */
 
-        });
+        //         // Get brands catalog
+        //         Route::get('/brands', [CatalogController::class, 'brands']);
+
+                
+        //         // Get processors catalog
+        //         Route::get('/processors', [CatalogController::class, 'processors']);
+
+        //         // Get memories catalog
+        //         Route::get('/memories', [CatalogController::class, 'memories']);
+
+        //         // Get hard disks catalog
+        //         Route::get('/disks', [CatalogController::class, 'disks']);
+
+        //         // Get licenses catalog
+        //         Route::get('/licenses', [CatalogController::class, 'licenses']);
+
+        //     });
+
+        //     // Show all computers (solo tecnicos o administradores)
+        //     Route::get('/', [ComputerController::class, 'index']);
+
+        //     // Assign user to computer (solo tecnicos o administradores)
+        //     Route::get('/assign/{user}', [ComputerController::class, 'assignUser']);
+
+        //     // Show user assets (Todos los usuarios)
+        //     Route::get('/show/{user}', [ComputerController::class, 'me']);
+
+        //     // Show specific computer (todos con permiso de lectura)
+        //     Route::get('/{computer}', [ComputerController::class, 'show']);
+
+        //     // Update computer information and register changes in history (solo técnicos o administradores)
+        //     // Route::put('/computers/{computer}', [ComputerController::class, 'update']);
+        //     Route::patch('/{computer}', [ComputerController::class, 'update']);
+
+        //     // Delete computer and register on deletion history (solo administradores o tecnicos)
+        //     Route::delete('/{computer}', [ComputerController::class, 'delete']);
+
+        // });
     });
 
     

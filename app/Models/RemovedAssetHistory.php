@@ -15,17 +15,29 @@ class RemovedAssetHistory extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'assetId',
         'assetType',
         'serialNumber',
+        'internalId',
+        'brand',
+        'model',
         'companyId',
         'companyName',
+        'lastUser',
+        'userName',
+        'removalReason',
         'removalDate',
         'removedBy',
-        'remUserName'
+        'remUserName',
+        'details'
     ];
-
-    //It's a historical table
-    public function removedComputer() {
-        return $this->hasOne(RemovedComputerHistory::class, 'removedId', 'remAssetId');
+    
+    // Scopes
+    public function scopeSearch($query, string $term) {
+        return $query->where(function ($q) use($term) {
+            $q->where('internalId', 'ILIKE', "%$term%")
+            ->orWhere('brand', 'ILIKE', "%$term%")
+            ->orWhere('model', 'ILIKE', "%$term%");
+        });
     }
 }

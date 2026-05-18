@@ -2,14 +2,16 @@
 
 namespace App\Services\Asset\Computer;
 
+// Enums
+// use App\Enums\ComponentType;
 // Models
-use App\Models\ComputerModel;
-use App\Models\ComputerModelMemory;
-use App\Models\ComputerModelDisk;
-use App\Models\Memory;
-use App\Models\HardDisk;
-use App\Models\Processor;
-use App\Models\ComputerBrand;
+use App\Models\Models;
+// use App\Models\ComputerModelMemory;
+// use App\Models\ComputerModelDisk;
+// use App\Models\Memory;
+// use App\Models\HardDisk;
+use App\Models\Component;
+use App\Models\Brand;
 use App\Models\License;
 // Utilities
 use Illuminate\Support\Facades\DB;
@@ -18,19 +20,19 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 class CatalogService 
 {
     public function brand() {
-        return ComputerBrand::all();
+        return Brand::all();
     }
 
     public function processor() {
-        return Processor::all();
+        return Component::category('PROC')->get();
     }
 
     public function memory() {
-        return Memory::all();
+        return Component::category('MEM')->get();
     }
 
     public function disk() {
-        return HardDisk::all();
+        return Component::category('STOR')->get();
     }
 
     public function license() {
@@ -38,12 +40,12 @@ class CatalogService
     }
 
     public function catalog(array $filters = [], int $perPage = 15): LengthAwarePaginator{
-        return ComputerModel::query()
+        return Models::query()
         ->when($filters['brandId'] ?? null, fn($q, $v) => $q->brand($v))
         ->when($filters['search'] ?? null, fn($q, $v) => $q->search($v))
         ->with([
-            'computerBrand',
-            'processor'
+            'brands',
+            'modelComponents.component'
         ])
         ->paginate($perPage);
     }

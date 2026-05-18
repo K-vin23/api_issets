@@ -37,10 +37,11 @@ class CompanyService
         // Pending
     }
 
-    public function locations(Company $company) {
-        return Location::where('companyId', $company->companyId)
+    public function locations(Company $company, array $filetrs = []) {
+        return Location::query()
+                ->when($filters['cityId'] ?? null, fn($q, $v) => $q->city($v))
+                ->where('companyId', $company->companyId)
                 ->with([
-                    'company',
                     'city'
                 ])->get();
     }

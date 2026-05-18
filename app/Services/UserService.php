@@ -22,7 +22,6 @@ class UserService
         
         //optional filters w/ scopes in the model
         return User::query()
-        ->active()
         ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
         ->when($filters['areaId'] ?? null, fn($q, $v) => $q->area($v))
         ->when($filters['locationId'] ?? null, fn($q, $v) => $q->location($v))
@@ -40,6 +39,14 @@ class UserService
 
     }
 
+    public function search(array $search){
+        return User::query()
+        ->when($search['search'], fn($q, $v) => $q->search($v))
+        ->select('userId', 'firstname', 'middlename', 'lastname', 's_lastname')
+        ->orderBy('firstname')
+        ->get();
+    }
+
     public function show(User $user): User {
         return $user->load([
             'company',
@@ -49,6 +56,13 @@ class UserService
             'rol',
             'registeredBy'
         ]);
+    }
+
+    public function technicians(){
+        return User::query()
+        ->where('rolId', 'TEC')
+        ->select('userId', 'firstname', 'middlename', 'lastname', 's_lastname')
+        ->get();
     }
 
         public function me(User $user): User {

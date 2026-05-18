@@ -20,7 +20,7 @@ class Area extends Model
         return $this->hasMany(User::class, 'areaId', 'areaId');
     }
 
-    public function computers() {
-        return $this->hasMany(Computer::class, 'areaId', 'areaId');
+    public function assets() {
+        return $this->hasMany(Asset::class, 'areaId', 'areaId');
     }
 }

@@ -21,7 +21,7 @@ class User extends Authenticatable
     public $timestamps = false;
 
     protected $fillable = [
-        'userId',
+        'cedula',
         'rolId',
         'companyId',
         'firstname',
@@ -55,6 +55,10 @@ class User extends Authenticatable
     public function getFullName() :string
     {
         return "{$this->firstname} {$this->middlename} {$this->lastname} {$this->s_lastname}";
+    }
+
+    public function isActiveLabel(): attribute {
+        return Attribute::make(get: fn() => $this->isActive ? 'Active' : 'Inactive');
     }
 
     public function isAdmin(): bool {
@@ -122,12 +126,16 @@ class User extends Authenticatable
         return $this->hasMany(Asset::class, 'registeredBy', 'userId');
     }
 
-    public function computerAssigned() {
-        return $this->hasMany(Computer::class, 'assignedUser', 'userId');
+    public function assetAssigned() {
+        return $this->hasMany(Asset::class, 'assignedUser', 'userId');
     }
 
-    public function computerAssignedBy() {
-        return $this->hasMany(Computer::class, 'assignedBy', 'userId');
+    public function assignedHistory() {
+        return $this->hasMany(AssetAssignationHistory::class, 'userId', 'userId');
+    }
+
+    public function assetAssignedBy() {
+        return $this->hasMany(AssetAssignationHistory::class, 'assignedBy', 'userId');
     }
 
     public function maintenanceTechnician() {

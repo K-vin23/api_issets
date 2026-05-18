@@ -17,7 +17,6 @@ class Maintenance extends Model
         'assetId',
         'typeId',
         'maintenanceDate',
-        'nextMaintenance',
         'tecId',
         'observations'
     ];
