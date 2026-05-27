@@ -19,27 +19,26 @@ class MaintenanceService
         ->when($filters['date'] ?? null, fn ($q, $v) => $q->date($v))
         ->when(
             isset($filters['from'], $filters['to']),
-            fn ($q) => $q->dateBetween($filters['from'], $filters['to'])
-        );
+            fn ($q) => $q->dateBetween($filters['from'], $filters['to']))
+        ->paginate($perPage);
     }
 
-    public function getByAsset(Asset $asset) {
+    public function getByAsset(Asset $asset, int $perPage = 3): LengthAwarePaginator {
         return $asset->maintenance()
-                ->with(['maintenanceType', 'technician'])
-                ->latest('date')
-                ->get();
+                ->with(['technician'])
+                ->latest('maintenanceDate')
+                ->paginate($perPage);
     }
 
-    public function register(Asset $asset, array $data, int $userId): Maintenance{
-        return DB::transaction(function () use ($asset, $data, $userId) {
+    public function register(Asset $asset, array $data): Maintenance{
+        return DB::transaction(function () use ($asset, $data) {
 
             $maintenance = Maintenance::create([
-                'assetId'           => $asset->id,
-                'typeId'            => $data['type_id'],
-                'maintenanceDate'    => Carbon::parse($data['maintenanceDate']) ?? now(),
-                // 'nextMaintenance'    => $data['nextMaintenance'] ?? Carbon::parse($data['maintenanceDate'])->addMonthsNoOverflow(6),
-                'tecId'              => $userId,
-                'observations'       => $data['observations']
+                'assetId'           => $asset->assetId,
+                'type'              => $data['type'],
+                'maintenanceDate'   => $data['maintenanceDate'] ?? now(),
+                'tecId'             => $data['tecId'],
+                'observations'      => $data['description']
             ]);
 
             if (!empty($data['changes']) && $asset->isComputer()) {

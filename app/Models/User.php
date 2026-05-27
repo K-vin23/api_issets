@@ -83,6 +83,24 @@ class User extends Authenticatable
         return $query->where('areaId', $areaId);
     }
 
+    public function scopeRol($query, string $rolId) {
+        return $query->where('rolId', $rolId);
+    }
+
+    public function scopeStatus($query, string $status) {
+        switch ($status) {
+            case 'Active':
+                return $query->where('isActive', true);
+            break;
+            case 'Inactive':
+                return $query->where('isActive', false);
+            break;
+            default:
+                    return $query->where('isActive', false);
+                break;
+        }
+    }
+
     public function scopeLocation($query, int $locationId) {
         return $query->where('locationId', $locationId);
     }

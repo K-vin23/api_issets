@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+// Models
 use App\Models\Computer;
 use App\Models\Models;
+// Requests
 use App\Http\Requests\IndexCatalogRequest;
 use App\Http\Requests\StoreCatalogRequest;
+// Services
 use App\Services\Asset\Computer\CatalogService;
+// Resources
+use App\Http\Resources\ComponentResource;
 
 class CatalogController extends Controller
 {
@@ -43,9 +48,9 @@ class CatalogController extends Controller
 
         $this->authorize('viewAny', Models::class);
 
-        return response()->json(
-            $this->catalogService->memory()
-        );
+        $mems = $this->catalogService->memory();
+
+        return ComponentResource::collection($mems);
     }
 
     public function brands() {
@@ -62,20 +67,18 @@ class CatalogController extends Controller
 
         $this->authorize('viewAny', Models::class);
 
-        return response()->json(
-            $this->catalogService->processor()
-        );
-        
+        $prs = $this->catalogService->processor();
+
+        return ComponentResource($prs);        
     }
 
     public function disks() {
 
         $this->authorize('viewAny', Models::class);
 
-        return response()->json(
-            $this->catalogService->disk()
-        );
-        
+        $dks =  $this->catalogService->disk();
+
+        return ComponentResource::collection($dks);
     }
 
     public function licenses() {

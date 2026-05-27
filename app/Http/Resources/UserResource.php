@@ -15,20 +15,17 @@ class UserResource extends JsonResource
     {
         return [
             'cedula'        => $this->cedula,
-            'rol'           => RolResource::make($this->whenLoaded('rol')),
+            'rolId'         => $this->rolId,
             'firstname'     => $this->firstname,
             'middlename'    => $this->middlename,
             'lastname'      => $this->lastname,
             'secondLastname'=> $this->s_lastname,
             'email'         => $this->email,
             'registDate'    => $this->registDate,
-            'registBy'      => UserListResource::make($this->whenLoaded('registeredBy')),
-            'company'       => CompanyResource::make($this->whenLoaded('company')),
-            'area'          => $this->whenLoaded('area', fn() => [
-                                'areaId'    => $this->area->areaId,
-                                'area'  => $this->area->area, 
-                            ]),
-            'location'      => LocationResource::make($this->whenLoaded('location')),
+            'companyId'     => $this->companyId,
+            'cityId'        => $this->location->cityId,
+            'areaId'        => $this->areaId,
+            'locationId'    => $this->locationId,
             'status'        => $this->is_active_label
         ];
     }

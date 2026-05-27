@@ -16,6 +16,7 @@ use App\Http\Requests\SearchRequest;
 use App\Services\UserService;
 // Resources
 use App\Http\Resources\UserResource;
+use App\Http\Resources\UserListResource;
 // Utilities
 use Illuminate\Support\Facades\Hash;
 
@@ -32,7 +33,7 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
 
         $users = $this->userService->index($request->validated(), $request->integer('perPage', 15));
-        return UserResource::collection($users);
+        return UserListResource::collection($users);
     }
 
     public function search(SearchRequest $request){

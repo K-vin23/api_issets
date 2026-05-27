@@ -17,7 +17,7 @@ class LoginRequest extends FormRequest
     {
         return [
             'cedula' => 'required|integer',
-            'pw_encrypt' => 'required|string'
+            'password' => 'required|string'
         ];
     }
 
@@ -26,7 +26,7 @@ class LoginRequest extends FormRequest
         return [
             'cedula.required' => 'La cédula es obligatoria.',
             'cedula.integer' => 'La cédula debe ser un número entero.',
-            'pw_encrypt.required' => 'La contraseña es obligatoria.'
+            'password.required' => 'La contraseña es obligatoria.'
         ];
     }
 

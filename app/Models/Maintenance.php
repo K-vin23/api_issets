@@ -15,7 +15,7 @@ class Maintenance extends Model
 
     protected $fillable = [
         'assetId',
-        'typeId',
+        'type',
         'maintenanceDate',
         'tecId',
         'observations'
@@ -23,7 +23,7 @@ class Maintenance extends Model
 
     // Scopes
     public function scopeType($query, string $typeId) {
-        return $query->where('typeId', $typeId);
+        return $query->where('type', $typeId);
     }
 
     public function scopeDate($query, string $date) {
@@ -39,12 +39,8 @@ class Maintenance extends Model
         return $this->belongsTo(Asset::class, 'assetId', 'assetId');
     }
 
-    public function maintenanceType() { 
-        return $this->belongsTo(MaintenanceType::class, 'typeId', 'typeId');
-    }
-
     public function technician() {
-        return $this->belongsTo(User::class, 'tecId', 'cedula');
+        return $this->belongsTo(User::class, 'tecId', 'userId');
     }
 
     public function changes() {

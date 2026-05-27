@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
-//models
+// Models
 use App\Models\Maintenance;
-//requests
-use App\Http\Requests\StoreMantenimientoRequest;
-use App\Http\Requests\UpdateMantenimientoRequest;
-//services
+use App\Models\Asset;
+// Requests
+use App\Http\Requests\IndexMaintenanceRequest;
+use App\Http\Requests\StoreMaintenanceRequest;
+use App\Http\Requests\UpdateMaintenanceRequest;
+// Services
 use App\Services\Asset\MaintenanceService;
+// Resources
+use App\Http\Resources\MaintenanceListResource;
 
 class MaintenanceController extends Controller
 {
-    public function __construct(
-        protected MaintenanceService $maintenanceService
-    )
-    {
+    public function __construct(protected MaintenanceService $maintenanceService) {
         $this->middleware('auth:sanctum'); 
     }
 
@@ -27,14 +28,14 @@ class MaintenanceController extends Controller
         return response()->json(
             $this->maintenanceService->index($request->validated(), $request->integer('perPage', 15))
         );
+        
     }
 
-    public function store(StoreMaintenanceRequest $request, Maintenance $maintenance) {
+    public function store(StoreMaintenanceRequest $request, Asset $asset) {
 
         $maintenance = $this->maintenanceService->register(
-            $request->validated(),
-            $maintenance,
-            auth()->id()
+            $asset,
+            $request->validated()
         );
 
         return response()->json([
@@ -54,9 +55,9 @@ class MaintenanceController extends Controller
     public function showAsset(Asset $asset) { 
         $this->authorize('view', $asset);
 
-        return response()->json(
-            $this->maintenanceService->getByAsset($asset)
-        );
+        $mnts = $this->maintenanceService->getByAsset($asset);
+
+        return MaintenanceListResource::collection($mnts);
     }
 
     public function update(UpdateMaintenanceRequest $request, Maintenance $maintenance) { 

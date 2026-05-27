@@ -16,7 +16,7 @@ class AuthController extends Controller
 
     $user = User::where('cedula', $validated['cedula'])->first();
 
-    if (!$user || !Hash::check($validated['pw_encrypt'], $user->pw_encrypt)) {
+    if (!$user || !Hash::check($validated['password'], $user->pw_encrypt)) {
         return response()->json(['message' => 'Credenciales incorrectas'], 401);
     }
 
@@ -26,6 +26,7 @@ class AuthController extends Controller
         'user' => [
             'userId'    => $user->userId,
             'name'      => $user->getFullName(),
+            'email'     => $user->email,
             'rol'       => $user->rolId,
         ],
         'token' => $token,

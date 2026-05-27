@@ -57,6 +57,17 @@ class Asset extends Model
     public function scopeType($query, string $assetType) {
         return $query->where('assetType', $assetType);
     }
+    
+    // Scope for isActive, not for user assigned
+    public function scopeStatus($query, string $status) {
+        if($status === 'active'){
+            return $query->where('isActive', true);
+        } else if ($status === 'inactive') {
+            return $query->where('isActive', false);
+        }else{
+            return;
+        }
+    }
 
     // public function scopeSearch($query, string $term) {
     //     return $query->where(function ($q) use($term) {

@@ -11,10 +11,7 @@ use App\Services\DashboardService;
 
 class DashboardController extends Controller
 {
-    public function __construct(
-        protected DashboardService $dashboardService
-    )
-    {
+    public function __construct(protected DashboardService $dashboardService) {
         $this->middleware('auth:sanctum');
     }
 

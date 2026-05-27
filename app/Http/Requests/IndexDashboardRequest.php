@@ -15,7 +15,8 @@ class IndexDashboardRequest extends FormRequest
     {
         return [
             'companyId' => 'nullable|integer|exists:companies,companyId',
-            'areaId'    => 'nullable|integer|exists:areas,areaId'
+            'areaId'    => 'nullable|integer|exists:areas,areaId',
+            'status'    => 'nullable|string'
         ];
     }
 }

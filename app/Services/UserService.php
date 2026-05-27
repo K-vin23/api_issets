@@ -23,16 +23,14 @@ class UserService
         //optional filters w/ scopes in the model
         return User::query()
         ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
+        ->when($filters['rolId'] ?? null, fn($q, $v) => $q->rol($v))
         ->when($filters['areaId'] ?? null, fn($q, $v) => $q->area($v))
         ->when($filters['locationId'] ?? null, fn($q, $v) => $q->location($v))
+        ->when($filters['status'] ?? null, fn($q, $v) => $q->status($v))
         ->when($filters['search'] ?? null, fn($q, $v) => $q->search($v))        
         ->with([
             'company', 
-            'area', 
-            'location',
-            'location.city' ,
-            'rol',
-            'registeredBy'
+            'rol'
         ])
         ->orderBy('firstname')
         ->paginate($perPage);

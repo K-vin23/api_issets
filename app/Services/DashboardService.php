@@ -5,6 +5,7 @@ namespace App\Services;
 // Models
 use App\Models\Asset;
 use App\Models\User;
+use App\Models\Area;
 use App\Models\Maintenance;
 // Utilities
 use Illuminate\Support\Facades\DB;
@@ -22,8 +23,9 @@ class DashboardService
 
     protected function totals (array $filters): array {
         $assets = Asset::query()
-                ->when($filters['companyId'] ?? null, fn($q, $v) => $q->where('companyId', $v))
+                ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
                 ->when($filters['areaId'] ?? null, fn($q, $v) => $q->where('areaId', $v))
+                ->when($filters['status'] ?? null, fn($q, $v) => $q->status($v))
                 ->count();
 
         $users = User::query()
@@ -33,40 +35,64 @@ class DashboardService
         $maintenances = Maintenance::query()
                         ->count();
         
+        // Próximos mantenimientos (todos los pendientes)
+        $nextMaintenances = Asset::query()
+            ->when($filters['companyId'] ?? null, fn($q, $v) => $q->where('companyId', $v))
+            ->when($filters['areaId'] ?? null, fn($q, $v) => $q->where('areaId', $v))
+            ->whereNotNull('nextMaintenance')
+            ->where('nextMaintenance', '>=', now())
+            ->count();
+
+        
         return [
-            'assets'        => $assets,
-            'users'         => $users,
-            'maintenances'  => $maintenances,
+            'assets'            => $assets,
+            'users'             => $users,
+            'maintenances'      => $maintenances,
+            'nextMaintenances'  => $nextMaintenances
         ];
     }
 
     protected function upcomingMaintenances (array $filters) {
         return DB::table('maintenances')
                 ->join('assets', 'assets.assetId', '=', 'maintenances.assetId')
-                ->join('asset_types', 'asset_types.typeId', '=', 'assets.assetType')
-                ->join('computers', 'computers.assetId', '=', 'assets.assetId')
-                ->join('models', 'models.modelId', '=', 'computers.modelId')
+                ->join('asset_types', 'asset_types.typeId', '=', 'assets.typeId')
+                ->join('models', 'models.modelId', '=', 'assets.modelId')
                 ->when($filters['companyId'] ?? null, fn($q, $v) => $q->where('assets.companyId', $v))
-                ->whereBetween('maintenances.nextMaintenance', [now(), now()->addDays(30)])
-                ->orderBy('maintenances.nextMaintenance')
+                ->whereBetween('assets.nextMaintenance', [now(), now()->addDays(30)])
+                ->orderBy('assets.nextMaintenance')
                 ->limit(5)
                 ->get([
                     'asset_types.assetType as assetType',
                     DB::raw('models."brandId" || \' \' || models."modelFamily" || \' \' || models."modelSerie"  as model'),
-                    'computers.internalId as internalId',
+                    'assets.internalId as internalId',
                 ]);
     }
 
     protected function assetByArea(array $filters) {
-        return DB::table('computers')
-                ->join('areas', 'areas.areaId', '=', 'computers.areaId')
-                ->when($filters['companyId'] ?? null, fn($q, $v) => $q->where('computers.companyId', $v))
-                ->select(
-                    'areas.area as area',
-                    DB::raw('COUNT(*) as total')
-                )
-                ->groupBy('areas.area')
-                ->orderBy('total', 'desc')
+        return Area::query()
+                ->whereHas('assets', function ($q) use ($filters) {
+                        $q->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
+                          ->when($filters['status'] ?? null, fn($q, $v) => $q->status($v));
+                })
+                ->select('area')
+                ->withCount([
+                    'assets as total' => function($q) use ($filters) {
+                        $q->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
+                          ->when($filters['status'] ?? null, fn($q, $v) => $q->status($v));
+                    }
+                ])
+                ->orderByDesc('total')
                 ->get();
+        
+        // DB::table('assets')
+        //         ->join('areas', 'areas.areaId', '=', 'assets.areaId')
+        //         ->when($filters['companyId'] ?? null, fn($q, $v) => $q->where('assets.companyId', $v))
+        //         ->select(
+        //             'areas.area as area',
+        //             DB::raw('COUNT(*) as total')
+        //         )
+        //         ->groupBy('areas.area')
+        //         ->orderBy('total', 'desc')
+        //         ->get();
     }
 }
