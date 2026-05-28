@@ -6,10 +6,6 @@ namespace App\Services\Asset\Computer;
 // use App\Enums\ComponentType;
 // Models
 use App\Models\Models;
-// use App\Models\ComputerModelMemory;
-// use App\Models\ComputerModelDisk;
-// use App\Models\Memory;
-// use App\Models\HardDisk;
 use App\Models\Component;
 use App\Models\Brand;
 use App\Models\License;

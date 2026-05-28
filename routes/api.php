@@ -42,51 +42,34 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/ping', function () {
-    return response()->json([
-        'status' => 'ok',
-        'message' => 'API responde correctamente'
-    ]);
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'API responde correctamente'
+        ]);
     });
-
     /*
-    ┌──────────────────────────────────────────────────┐
-    │            Dashboard managment routes            │
-    ├──────────────────────────────────────────────────┤
-    | Only authenticated users.                        │
-    | Apply policies by rol.                           │
-    └──────────────────────────────────────────────────┘
+        ┌──────────────────────────────────────────────────┐
+        │                Dashboard route                   │
+        └──────────────────────────────────────────────────┘
     */
-
-    Route::prefix('dashboard')->group(function () {
-        Route::get('/', [DashboardController::class, 'index']);
-
-    });
-
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     /*
         ┌──────────────────────────────────────────────────┐
         │                   Cities route                   │
         └──────────────────────────────────────────────────┘
     */
-
     Route::get('/cities', [CityController::class, 'index']);
-
     /*
         ┌──────────────────────────────────────────────────┐
         │                    Areas route                   │
         └──────────────────────────────────────────────────┘
     */
-
     Route::get('/areas', [AreaController::class, 'index']);
-
     /*
-    ┌──────────────────────────────────────────────────┐
-    │            Companies managment routes            │
-    ├──────────────────────────────────────────────────┤
-    | Only authenticated users.                        │
-    | Apply policies by rol.                           │
-    └──────────────────────────────────────────────────┘
+        ┌──────────────────────────────────────────────────┐
+        │            Companies managment routes            │
+        └──────────────────────────────────────────────────┘
     */
-
     Route::prefix('companies')->group(function () {
 
         Route::get('/', [CompanyController::class, 'index']);
@@ -96,73 +79,59 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/{company}', [CompanyController::class, 'update']);
 
         Route::delete('/{company}', [CompanyController::class, 'delete']); // Pending
-
         /*
-         ┌──────────────────────────────────────────────────┐
-         │            Locations managment routes            │
-         └──────────────────────────────────────────────────┘
+            ┌──────────────────────────────────────────────────┐
+            │            Locations managment routes            │
+            └──────────────────────────────────────────────────┘
         */
+        Route::prefix('locations')->group(function () {
+            Route::get('/{company}', [LocationController::class, 'index']);
 
-        Route::get('/{company}/locations', [LocationController::class, 'index']);
+            Route::post('/{company}', [LocationController::class, 'store']);
 
-        Route::post('/{company}/locations', [LocationController::class, 'store']);
+            Route::patch('/{location}', [LocationController::class, 'update']);
 
-        Route::patch('locations/{location}', [LocationController::class, 'update']);
-
-        Route::delete('locations/{location}', [LocationController::class, 'delete']);
-
+            Route::delete('/{location}', [LocationController::class, 'delete']);
+        });
     });
-
     /*
-    ┌──────────────────────────────────────────────────┐
-    │               User managment routes              │
-    ├──────────────────────────────────────────────────┤
-    | Only authenticated users.                        │
-    | Apply policies by rol.                           │
-    └──────────────────────────────────────────────────┘
+        ┌──────────────────────────────────────────────────┐
+        │               User managment routes              │
+        └──────────────────────────────────────────────────┘
     */
-     
     Route::prefix('users')->group(function () {
-
         // Show all users (solo técnicos o administradores)
         Route::get('/', [UserController::class, 'index']);
+
+        // Create new user (solo tecnicos o administradores)
+        Route::post('/', [UserController::class, 'store']); 
 
         // Search by Id or fullname.
         Route::get('/search', [UserController::class, 'search']);
 
         // Show all technicians
-        Route::get('/technicians', [UserController::class, 'showTech']);
-
-        // Create new user (solo tecnicos o administradores)
-        Route::post('/register', [UserController::class, 'store']); 
+        Route::get('/techs', [UserController::class, 'showTech']);
 
         // Show user information (tecnicos, administradores o el propio usuario)
-        Route::get('/me', [UserController::class, 'me']);
+        // Route::get('/me', [UserController::class, 'me']);
 
-        Route::patch('/me', [UserController::class, 'updateMe']);
+        // Route::patch('/me', [UserController::class, 'updateMe']);
 
         // Show user information (tecnicos, administradores o el propio usuario)
         Route::get('/{user}', [UserController::class, 'show']);
 
         // Update user (solo técnicos o administradores)
-        // Route::put('/{user}', [UserController::class, 'update']); 
         Route::patch('/{user}', [UserController::class, 'update']);
 
         // Delete user (solo administradores)
         Route::delete('/{user}', [UserController::class, 'destroy']);
     });
-
     /*
-    ┌──────────────────────────────────────────────────┐
-    │               Asset managment routes             │
-    ├──────────────────────────────────────────────────┤
-    │ Only autenticated users.                         │
-    │ Apply policies by rol.                           │
-    └──────────────────────────────────────────────────┘
+        ┌──────────────────────────────────────────────────┐
+        │               Asset managment routes             │
+        └──────────────────────────────────────────────────┘
     */
-
     Route::prefix('assets')->group(function () { 
-
         // Ver todos los activos (técnicos o administradores)
         Route::get('/', [AssetController::class, 'index']);
 
@@ -177,17 +146,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Removed assets routes
         Route::prefix('removed')->group(function () { 
-
             // Show all removed assets
             Route::get('/', [AssetController::class, 'removed']);
-
         });
-
-        // Maintenances routes
+        /*
+            ┌──────────────────────────────────────────────────┐
+            │           Assets - Maintenances routes.          │
+            └──────────────────────────────────────────────────┘
+        */
         Route::prefix('maintenances')->group(function () { 
-
-            // Show all maintenances
-            Route::get('/', [MaintenanceController::class, 'index']);
 
             // Show all maintenances from asset
             Route::get('/{asset}', [MaintenanceController::class, 'showAsset']);
@@ -197,25 +164,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
             // Show specific maintenance
             Route::get('/{maintenance}', [MaintenanceController::class, 'show']);
-
         });
 
-        // Show specific computer (todos con permiso de lectura)
+        // Show specific asset (todos con permiso de lectura)
         Route::get('/{asset}', [AssetController::class, 'show']);
 
-        // Update computer information and register changes in history (solo técnicos o administradores)
-        // Route::put('/computers/{computer}', [ComputerController::class, 'update']);
-        Route::patch('/{computer}', [ComputerController::class, 'update']);
+        // Update asset information and register changes in history (solo técnicos o administradores)
+        Route::patch('/{asset}', [ComputerController::class, 'update']);
 
-        // Delete computer and register on deletion history (solo administradores o tecnicos)
-        Route::delete('/{computer}', [ComputerController::class, 'delete']);
-
-            /*
-                ┌──────────────────────────────────────────────────┐
-                │              Assets catalog routes.              │
-                └──────────────────────────────────────────────────┘
-            */
-            
+        // Delete asset and register on deletion history (solo administradores o tecnicos)
+        Route::delete('/{asset}', [ComputerController::class, 'delete']);
+        /*
+            ┌──────────────────────────────────────────────────┐
+            │            Assets - catalog routes.              │
+            └──────────────────────────────────────────────────┘
+        */
             Route::prefix('catalog')->group(function () { 
 
                 // Get catalog
@@ -244,19 +207,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
             });
     });
-
-    
-
     Route::prefix('audit')->group(function () { 
 
     });
-
-
     /*
     ┌───────────────────────────────┐
     │       end session             │
     └───────────────────────────────┘
     */
-
     Route::post('/logout', [AuthController::class, 'logout']);
 });

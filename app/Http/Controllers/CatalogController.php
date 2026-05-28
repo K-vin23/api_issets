@@ -14,23 +14,21 @@ use App\Http\Requests\StoreCatalogRequest;
 use App\Services\Asset\Computer\CatalogService;
 // Resources
 use App\Http\Resources\ComponentResource;
+use App\Http\Resources\ModelsListResource;
 
 class CatalogController extends Controller
 {
-    public function __construct(
-        protected CatalogService $catalogService
-    )
-    {
+    public function __construct(protected CatalogService $catalogService) {
         $this->middleware('auth:sanctum');
     }
 
     public function index(IndexCatalogRequest $request) {
 
        $this->authorize('viewAny', Models::class);
+       
+       $mds = $this->catalogService->catalog($request->validated(), $request->integer('perPage', 15));
 
-        return response()->json(
-            $this->catalogService->catalog($request->validated(), $request->integer('perPage', 15)) 
-        );
+       return ModelsListResource::collection($mds);
     }
 
     public function store(StoreCatalogRequest $request) {

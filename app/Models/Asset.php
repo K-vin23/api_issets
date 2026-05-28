@@ -27,12 +27,14 @@ class Asset extends Model
         'details',
         'lastUpdate',
         'isActive',
+        'nextMaintenance',
         'registeredBy',
     ];
 
     protected $casts = [
-        'purchaseDate' => 'date',
-        'lastUpdate' => 'date',
+        'nextMaintenance'   => 'date:Y-m-d',
+        'purchaseDate' => 'date:Y-m-d',
+        'lastUpdate' => 'date:Y-m-d',
     ];
 
     //Shortcuts

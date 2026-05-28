@@ -20,15 +20,12 @@ class MaintenanceController extends Controller
         $this->middleware('auth:sanctum'); 
     }
 
-    // All maintenances
-    public function index(IndexMaintenanceRequest $request) {
+    public function showAsset(Asset $asset) { 
+        $this->authorize('view', $asset);
 
-        $this->authorize('viewAny', Maintenance::class);
+        $mnts = $this->maintenanceService->getByAsset($asset);
 
-        return response()->json(
-            $this->maintenanceService->index($request->validated(), $request->integer('perPage', 15))
-        );
-        
+        return MaintenanceListResource::collection($mnts);
     }
 
     public function store(StoreMaintenanceRequest $request, Asset $asset) {
@@ -50,14 +47,6 @@ class MaintenanceController extends Controller
         return response()->json(
             $maintenance->load('changes.changeType')
         );
-    }
-
-    public function showAsset(Asset $asset) { 
-        $this->authorize('view', $asset);
-
-        $mnts = $this->maintenanceService->getByAsset($asset);
-
-        return MaintenanceListResource::collection($mnts);
     }
 
     public function update(UpdateMaintenanceRequest $request, Maintenance $maintenance) { 

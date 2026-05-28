@@ -26,7 +26,7 @@ class AssetComponentService
             if(!empty($data['memories'])) {
                 foreach ($data['memories'] as $m){
                     AssetComponent::create([
-                        'assetId'       => $assetId,
+                        'assetId'       => $asset->assetId,
                         'componentId'   => $m['id']
                     ]);
                 }
@@ -35,7 +35,7 @@ class AssetComponentService
             if(!empty($data['disks'])){
                 foreach ($data['disks'] as $d){
                     AssetComponent::create([
-                        'assetId'       => $assetId,
+                        'assetId'       => $asset->assetId,
                         'componentId'   => $d['id']
                     ]);
                 }
@@ -44,7 +44,7 @@ class AssetComponentService
             if(!empty($data['licenses'])){
                 foreach ($data['licenses'] as $l){
                     AssetLicense::create([
-                        'assetId'       => $assetId,
+                        'assetId'       => $asset->assetId,
                         'licenseId'     => $l['licenseId'],
                         'licenseKey'    => $l['licenseKey']
                     ]);

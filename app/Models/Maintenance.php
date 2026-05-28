@@ -22,8 +22,8 @@ class Maintenance extends Model
     ];
 
     // Scopes
-    public function scopeType($query, string $typeId) {
-        return $query->where('type', $typeId);
+    public function scopeType($query, string $type) {
+        return $query->where('type', $type);
     }
 
     public function scopeDate($query, string $date) {

@@ -13,6 +13,7 @@ use App\Services\Asset\MaintenanceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Carbon\Carbon;
 
 class AssetService
 {
@@ -78,18 +79,19 @@ class AssetService
 
             //CREATE ASSET
             $asset = Asset::create([
-                'companyId'     => $data['companyId'],
-                'areaId'        => $data['areaId'],
-                'typeId'        => $data['typeId'],
-                'modelId'       => $data['modelId'],
-                'serialNumber'  => $data['serialNumber'],
-                'internalId'    => $data['internalId'],        
-                'invoice'       => $data['invoice'] ?? null,
-                'purchaseDate'  => $data['purchaseDate'] ?? null,
-                'networkName'   => $data['networkName'],
-                'assignedUser'  => $data['assignedUser'] ?? null,
-                'details'       => $data['details'] ?? null,
-                'registeredBy'  => $userId,
+                'serialNumber'      => $data['serialNumber'],
+                'companyId'         => $data['companyId'],
+                'typeId'            => $data['categoryId'],
+                'invoice'           => $data['invoice'] ?? '',
+                'purchaseDate'      => $data['purchaseDate'] ?? now(),
+                'internalId'        => $data['internalId'],        
+                'areaId'            => $data['areaId'],
+                'modelId'           => $data['modelId'],
+                'assignedUser'      => $data['responsable'] ?? null,
+                'networkName'       => $data['networkName'] ?? '',
+                'nextMaintenance'   => Carbon::parse($data['purchaseDate'])->addMonthsNoOverflow(6),
+                'details'           => $data['details'] ?? '',
+                'registeredBy'      => $userId,
             ]);
 
             $asset->refresh();

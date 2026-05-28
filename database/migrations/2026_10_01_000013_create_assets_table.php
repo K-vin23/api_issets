@@ -26,7 +26,7 @@ return new class extends Migration
             $table->unsignedBigInteger('assignedUser')->nullable();
             $table->foreign('assignedUser')->references('userId')->on('users');
             $table->string('details', 100);
-            $table->timestampTz('lastUpdate')->useCurrent();
+            $table->timestamp('lastUpdate')->useCurrent();
             $table->boolean('isActive')->default(true);
             $table->date('nextMaintenance');
             $table->unsignedBigInteger('registeredBy');

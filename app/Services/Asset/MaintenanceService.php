@@ -13,16 +13,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class MaintenanceService
 {
-    public function index(array $filters = [], int $perPage = 15): LengthAwarePaginator {
-        return Maintenance::query()
-        ->when($filter['typeId'] ?? null, fn($q, $v) => $q->type($v))
-        ->when($filters['date'] ?? null, fn ($q, $v) => $q->date($v))
-        ->when(
-            isset($filters['from'], $filters['to']),
-            fn ($q) => $q->dateBetween($filters['from'], $filters['to']))
-        ->paginate($perPage);
-    }
-
     public function getByAsset(Asset $asset, int $perPage = 3): LengthAwarePaginator {
         return $asset->maintenance()
                 ->with(['technician'])

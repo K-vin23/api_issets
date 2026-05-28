@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('email', 100)->default('NO REGISTRADO');
             $table->string('pw_encrypt', 255)->nullable();
             $table->rememberToken();
-            $table->timestampTz('registDate')->useCurrent();
+            $table->timestamp('registDate')->useCurrent();
             $table->unsignedBigInteger('registBy')->nullable();   
             $table->boolean('isActive')->default(true);     
         });

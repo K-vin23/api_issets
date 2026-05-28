@@ -20,7 +20,7 @@ class AssetDetailResource extends JsonResource
 
         return [
             'assetId'       => $this->assetId,
-            'id'            => $this->internalId,
+            'internalId'            => $this->internalId,
             'model'         => ModelsResource::make($this->whenLoaded('assetModels')),
             'area'          => AreaResource::make($this->whenLoaded('area')),
             'categoryId'    => $this->typeId,
@@ -31,8 +31,6 @@ class AssetDetailResource extends JsonResource
             'responsable'   => UserListResource::make($this->whenLoaded('assignedTo')),
             'purchaseDate'  => $this->purchaseDate,
             'invoice'       => $this->invoice,
-            // 'brand'         => $this->computerModel->computerBrand->brand,
-            // 'model'         => $this->computerModel->model_name,
             $this->mergeWhen($this->isComputer(), [
                 'networkName'   => $this->networkName,
                 'processor'     => $processor ? [
