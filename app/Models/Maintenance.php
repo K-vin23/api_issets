@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use App\Enums\MaintenanceType;
 
 class Maintenance extends Model
 {
@@ -19,6 +20,10 @@ class Maintenance extends Model
         'maintenanceDate',
         'tecId',
         'observations'
+    ];
+
+    protected $casts = [
+        'type'  => MaintenanceType::class
     ];
 
     // Scopes

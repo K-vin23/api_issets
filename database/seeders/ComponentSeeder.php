@@ -18,6 +18,11 @@ class ComponentSeeder extends Seeder
         ]);
 
         Component::create([
+        'ctypeId'   => 3,
+        'component' => '8GB'
+        ]);
+
+        Component::create([
         'ctypeId'   => 6,
         'component' => '256GB'
         ]);
@@ -25,6 +30,11 @@ class ComponentSeeder extends Seeder
         Component::create([
         'ctypeId'   => 9,
         'component' => 'CORE I5 1235U'
+        ]);
+
+        Component::create([
+        'ctypeId'   => 9,
+        'component' => 'CORE I5 7500'
         ]);
     }
 }

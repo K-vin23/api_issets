@@ -20,7 +20,7 @@ class AssetDetailResource extends JsonResource
 
         return [
             'assetId'       => $this->assetId,
-            'internalId'            => $this->internalId,
+            'internalId'    => $this->internalId,
             'model'         => ModelsResource::make($this->whenLoaded('assetModels')),
             'area'          => AreaResource::make($this->whenLoaded('area')),
             'categoryId'    => $this->typeId,

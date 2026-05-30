@@ -31,6 +31,10 @@ class RemovedAssetHistory extends Model
         'remUserName',
         'details'
     ];
+
+    protected $casts = [
+        'details'   => 'array'
+    ];
     
     // Scopes
     public function scopeSearch($query, string $term) {
@@ -39,5 +43,10 @@ class RemovedAssetHistory extends Model
             ->orWhere('brand', 'ILIKE', "%$term%")
             ->orWhere('model', 'ILIKE', "%$term%");
         });
+    }
+
+    // Artificial relations
+    public function asset() {
+        return $this->belongsTo(Asset::class, 'assetId', 'assetId');
     }
 }

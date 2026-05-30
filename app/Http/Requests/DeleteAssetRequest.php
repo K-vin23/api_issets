@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AssignUserRequest extends FormRequest
+class DeleteAssetRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,7 +14,7 @@ class AssignUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'responsable' => 'required|integer|exists:users,userId',
+            'removalReason' => 'required|string|max:200'
         ];
     }
 }

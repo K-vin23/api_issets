@@ -12,10 +12,10 @@ class RemovedAssetResource extends JsonResource
         return [
             'assetId'       => $this->assetId,
             'internalId'    => $this->internalId,
-            'model'         => "{$this->brand} {$this->model}",
-            'category'      => $this->assetType,
-            'removalDate'   => $this->removalDate,
-            'reason'        => $this->removalReason,
+            'model'         => "{$this->assetModels->brands->brand} {$this->assetModels->model_name}",
+            'category'      => $this->type->assetType,
+            'removalDate'   => $this->latestRemoval?->removalDate,
+            'reason'        => $this->latestRemoval?->removalReason,
         ];
     }
 }

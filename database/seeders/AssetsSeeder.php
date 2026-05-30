@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\AssetSeeder;
 use Database\Seeders\AssetComponentSeeder;
+use Database\Seeders\AssetLicenseSeeder;
 
 class AssetsSeeder extends Seeder
 {
@@ -14,7 +15,8 @@ class AssetsSeeder extends Seeder
     {
         $this->call([
             AssetSeeder::class,
-            AssetComponentSeeder::class
+            AssetComponentSeeder::class,
+            AssetLicenseSeeder::class
         ]);
     }
 }

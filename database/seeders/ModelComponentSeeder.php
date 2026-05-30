@@ -12,7 +12,12 @@ class ModelComponentSeeder extends Seeder
     {
         ModelComponent::create([
             'modelId'       => 1,
-            'componentId'   => 3
+            'componentId'   => 4
+        ]);
+
+        ModelComponent::create([
+            'modelId'       => 4,
+            'componentId'   => 5
         ]);
     }
 }

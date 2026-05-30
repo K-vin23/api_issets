@@ -14,5 +14,15 @@ class BrandSeeder extends Seeder
             'brandId' => 'DELL',
             'brand'   => 'DELL'
         ]);
+
+        Brand::create([
+            'brandId' => 'HIK',
+            'brand'   => 'HIKVISION'
+        ]);
+
+        Brand::create([
+            'brandId' => 'LG',
+            'brand'   => 'LG'
+        ]);
     }
 }

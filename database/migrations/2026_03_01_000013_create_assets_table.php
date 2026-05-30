@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('networkName', 50)->nullable();
             $table->unsignedBigInteger('assignedUser')->nullable();
             $table->foreign('assignedUser')->references('userId')->on('users');
-            $table->string('details', 100);
+            $table->string('details', 100)->default('No details');
             $table->timestamp('lastUpdate')->useCurrent();
             $table->boolean('isActive')->default(true);
             $table->date('nextMaintenance');

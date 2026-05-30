@@ -10,6 +10,9 @@ use Database\Seeders\ModelsSeeder;
 use Database\Seeders\ComponentCategorySeeder;
 use Database\Seeders\ComponentTypeSeeder;
 use Database\Seeders\ComponentSeeder;
+use Database\Seeders\SoftwareTypeSeeder;
+use Database\Seeders\ProviderSeeder;
+use Database\Seeders\LicenseSeeder;
 use Database\Seeders\ModelComponentSeeder;
 
 class CatalogSeeder extends Seeder
@@ -24,6 +27,9 @@ class CatalogSeeder extends Seeder
             ComponentCategorySeeder::class,
             ComponentTypeSeeder::class,
             ComponentSeeder::class,
+            ProviderSeeder::class,
+            SoftwareTypeSeeder::class,
+            LicenseSeeder::class,
             ModelComponentSeeder::class,
         ]);
     }

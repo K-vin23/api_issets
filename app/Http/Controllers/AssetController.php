@@ -9,8 +9,11 @@ use App\Http\Requests\StoreAssetRequest;
 use App\Http\Requests\UpdateAssetRequest;
 use App\Http\Requests\IndexAssetRequest;
 use App\Http\Requests\RemovedAssetRequest;
+use App\Http\Requests\AssignUserRequest;
+use App\Http\Requests\DeleteAssetRequest;
 // Services
 use App\Services\Asset\AssetService;
+use App\Services\Asset\AssetAssignationService;
 // Resources
 use App\Http\Resources\AssetListResource;
 use App\Http\Resources\AssetDetailResource;
@@ -19,7 +22,7 @@ use App\Http\Resources\RemovedAssetResource;
 
 class AssetController extends Controller
 {
-    public function __construct(protected AssetService $assetService) {
+    public function __construct(protected AssetService $assetService, protected AssetAssignationService $assignService) {
         $this->middleware('auth:sanctum');
     }
 
@@ -77,14 +80,39 @@ class AssetController extends Controller
 
         $this->authorize('update', $asset);
 
-        $this->assetService->update(
-            $asset,
-            $validated,
-            auth()->id()
-        );
+        $this->assetService->update($asset, $validated, auth()->id());
 
         return response()->json([
             'message' => 'Activo actualizado exitosamente'
         ], 200);
+    }
+
+    public function assign(AssignUserRequest $request, Asset $asset) {
+
+        $validated = $request->validated();
+
+        $this->assignService->assign($asset, $validated['responsable'], auth()->id());
+
+        return response()->json([
+            'message' => 'assignacion realizada exitosamente'
+        ], 200);
+    }
+
+    public function delete(DeleteAssetRequest $request, Asset $asset) {
+        $this->authorize('delete', $asset);
+
+        $validated = $request->validated();
+
+        $this->assetService->delete($asset, $validated['removalReason'], auth()->id());
+
+        return response()->json(204);
+    }
+
+    public function restore(Asset $asset) {
+        $this->authorize('restore', $asset);
+
+        $this->assetService->restore($asset);
+
+        return response()->json(['message' => 'Activo actualizado exitosamente'], 200);
     }
 }

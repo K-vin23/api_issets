@@ -3,7 +3,7 @@ namespace App\Services\Asset;
 
 use Illuminate\Support\Collection;
 //Enums
-use App\Enums\ChangeAction;
+use App\Enums\ChangeType;
 use App\Enums\ComponentType;
 //Models
 use App\Models\Asset;
@@ -11,6 +11,8 @@ use App\Models\AssetComponent;
 use App\Models\Component;
 use App\Models\AssetLicense;
 use App\Models\ChangeAssetHistory;
+// Utilities
+use Illuminate\Support\Facades\DB;
 
 class AssetComponentService
 {
@@ -18,8 +20,7 @@ class AssetComponentService
     }
 
     public function addComponents(array $data, Asset $asset) {
-        // security check of components <-> asset type
-
+        // Security check of components <-> asset type
         //Computers
         if($asset->isComputer()) {
             //Add memories
@@ -56,53 +57,65 @@ class AssetComponentService
     }
 
     public function changeComponents(array $data, Asset $asset, int $maintenanceId) {
-        
-        $currents = $asset->components()->pluck('componentId');
-        
-        $new = collect($data['memories'] ?? [])
-                ->pluck('id')
-                ->merge(
-                    collect($data['disks'] ?? [])
+        DB::transaction(function () use ($data, $asset, $maintenanceId) {
+            // Temporalmente se evita el procesador
+            $currents = $asset->components()
+                        ->whereHas('component.compType.category', function ($q) {
+                            $q->where('categoryId', '!=', 'PROC');
+                        })
+                        ->pluck('componentId');
+            
+            $new = collect($data['memories'] ?? [])
                     ->pluck('id')
-                );
+                    ->merge(
+                        collect($data['disks'] ?? [])
+                        ->pluck('id')
+                    );
 
-        $currentCount = $currents->countBy();
-        $newCount = $new->countBy();
-        
-        $removed = collect();
-        $added = collect();
+            $currentCount = $currents->countBy();
+            $newCount = $new->countBy();
+            
+            $removed = collect();
+            $added = collect();
 
-        $removed = $this->countComponents($currentCount, $newCount);
-        $added = $this->countComponents($newCount, $currentCount);
+            $removed = $this->countComponents($currentCount, $newCount);
+            $added = $this->countComponents($newCount, $currentCount);
 
-        // Traer componentes
-        $componentMap = Component::whereIn(
-            'componentId',
-            $added->merge($removed)->unique()
-        )->get()->keyBy('componentId');
+            // Traer componentes
+            $componentMap = Component::whereIn(
+                'componentId',
+                $added->merge($removed)->unique()
+            )->get()->keyBy('componentId');
 
-        $removed->each(function ($componentId) use ($asset, $maintenanceId, $componentMap) {
+            $removed->each(function ($componentId) use ($asset, $maintenanceId, $componentMap) {
 
-            $component = $componentMap[$componentId];
+                $component = $componentMap[$componentId];
 
-            ChangeAssetHistory::create([
-                'assetId'           => $asset->assetId,
-                'maintenanceId'     => $maintenanceId,
-                'changeTypeId'      => ChangeAction::REMOVED->value,
-                'description'       => $this->description($component, ChangeAction::REMOVED->value)
-            ]);
-        });
+                ChangeAssetHistory::create([
+                    'maintenanceId' => $maintenanceId,
+                    'changetype'    => ChangeType::REMOVED,
+                    'description'   => $this->description($component, ChangeType::REMOVED->value),
+                    'changeDate'    => now()
+                ]);
 
-        $added->each(function ($componentId) use ($asset, $maintenanceId, $componentMap) {
+                $asset->components()->where('componentId', $componentId)->first()?->delete();
+            });
 
-            $component = $componentMap[$componentId];
+            $added->each(function ($componentId) use ($asset, $maintenanceId, $componentMap) {
 
-            ChangeAssetHistory::create([
-                'assetId'           => $asset->assetId,
-                'maintenanceId'     => $maintenanceId,
-                'changeTypeId'      => ChangeAction::ADDED->value,
-                'description'       => $this->description($component, ChangeAction::ADDED->value)
-            ]);
+                $component = $componentMap[$componentId];
+
+                ChangeAssetHistory::create([
+                    'maintenanceId' => $maintenanceId,
+                    'changetype'    => ChangeType::ADDED,
+                    'description'   => $this->description($component, ChangeType::ADDED->value),
+                    'changeDate'    => now()
+                ]);
+
+                $asset->components()->create([
+                    'componentId' => $component->componentId
+                ]);
+            });
         });
     }
 
@@ -123,13 +136,12 @@ class AssetComponentService
     }
 
     private function description(Component $component, string $action): String{
-        if($component->componentType === ComponentType::MEM->value){
+        if($component->compType->category->category === ComponentType::MEM->value){
             return "Memoria: {$component->component_name} {$action} (edición)";
         }
-        if($component->componentType === ComponentType::STOR->value){
+        if($component->compType->category->category === ComponentType::STOR->value){
             return "Disco duro: {$component->component_name} {$action} (edición)";
         }
+        return "Error en identificación {$component->compType->category->category}";
     }
-
-
 }

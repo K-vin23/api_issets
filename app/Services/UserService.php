@@ -5,7 +5,7 @@ namespace App\Services;
 // Models
 use App\Models\User;
 // Services
-use App\Services\UserComputerAssignService;
+use App\Services\Asset\AssetAssignationService;
 // Utilities
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,10 +13,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UserService
 {
-    public function __construct(
-        protected UserComputerAssignService $assignService
-    )
-    {}
+    public function __construct(protected AssetAssignationService $assignService){ }
 
     public function index(array $filters = [], int $perPage = 15): LengthAwarePaginator {
         
@@ -40,7 +37,6 @@ class UserService
     public function search(array $search){
         return User::query()
         ->when($search['search'], fn($q, $v) => $q->search($v))
-        ->select('userId', 'firstname', 'middlename', 'lastname', 's_lastname')
         ->orderBy('firstname')
         ->get();
     }
@@ -59,7 +55,6 @@ class UserService
     public function technicians(){
         return User::query()
         ->where('rolId', 'TEC')
-        ->select('userId', 'firstname', 'middlename', 'lastname', 's_lastname')
         ->get();
     }
 
@@ -141,11 +136,12 @@ class UserService
     public function delete(User $user, int $performedBy) {
 
         DB::transaction(function () use ($user, $performedBy) {
-            $this->assignService->unassignAllFromUser($user, $performedBy);
-
             $user->update([
                 'isActive' => false
             ]);
+            $user->refresh();
+
+            $this->assignService->unassignAllFromUser($user, $performedBy);
         });
     }
 }

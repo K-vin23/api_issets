@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\ChangeType;
 
 class ChangeAssetHistory extends Model
 {
@@ -15,11 +16,14 @@ class ChangeAssetHistory extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'assetId',
         'maintenanceId',
-        'changeTypeId',
+        'changetype',
         'description',
         'changeDate'
+    ];
+
+    protected $casts = [
+        'changetype' => changeType::class
     ];
 
     // Relations

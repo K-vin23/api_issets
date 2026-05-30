@@ -17,6 +17,7 @@ use App\Services\UserService;
 // Resources
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserListResource;
+use App\Http\Resources\UserFormResource;
 // Utilities
 use Illuminate\Support\Facades\Hash;
 
@@ -40,9 +41,8 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
 
         $users = $this->userService->search($request->validated());
-        return response()->json([
-            'data' => $users
-        ], 200);
+
+        return UserFormResource::collection($users);
     }
 
     public function show(User $user) {
@@ -58,9 +58,7 @@ class UserController extends Controller
 
         $techs = $this->userService->technicians();
 
-        return response()->json([
-            $techs
-        ], 200);
+        return UserFormResource::collection($techs);
     }
 
     public function me(Request $request) {

@@ -26,6 +26,7 @@ class Asset extends Model
         'assignedUser',
         'details',
         'lastUpdate',
+        'updateBy',
         'isActive',
         'nextMaintenance',
         'registeredBy',
@@ -56,12 +57,16 @@ class Asset extends Model
         return $query->where('companyId', $companyId);
     }
 
+    public function scopeArea($query, int $areaId) {
+        return $query->where('areaId', $areaId);
+    }
+
     public function scopeType($query, string $assetType) {
-        return $query->where('assetType', $assetType);
+        return $query->where('typeId', $assetType);
     }
     
-    // Scope for isActive, not for user assigned
-    public function scopeStatus($query, string $status) {
+    // Scopes for isActive, not for user assigned
+    public function scopeActive($query, string $status) {
         if($status === 'active'){
             return $query->where('isActive', true);
         } else if ($status === 'inactive') {
@@ -121,5 +126,14 @@ class Asset extends Model
 
     public function licenses() {
         return $this->hasMany(AssetLicense::class, 'assetId', 'assetId');
+    }
+
+    // Artificial relations
+    public function removedHistories() {
+        return $this->hasMany(RemovedAssetHistory::class, 'assetId', 'assetId')->latest('removalDate');
+    }
+
+    public function latestRemoval() {
+        return $this->hasOne(RemovedAssetHistory::class, 'assetId', 'assetId')->latestOfMany('removalDate');
     }
 }

@@ -1,15 +1,15 @@
 <?php
 namespace App\Services\Asset;
 
+// Enums
+use App\Enums\MaintenanceType;
 // Models
 use App\Models\Asset;
 use App\Models\Maintenance;
-// Services
-use App\Services\Asset\Computer\Descriptions\ChangeDescriptionBuilder;
-use App\Services\Asset\Computer\Contracts\ChangeHandlerFactory;
 // Utilities
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Carbon\Carbon;
 
 class MaintenanceService
 {
@@ -25,23 +25,23 @@ class MaintenanceService
 
             $maintenance = Maintenance::create([
                 'assetId'           => $asset->assetId,
-                'type'              => $data['type'],
-                'maintenanceDate'   => $data['maintenanceDate'] ?? now(),
+                'type'              => $data['type'] ?? MaintenanceType::CORR,
+                'maintenanceDate'   => $data['maintenanceDate'] ?? now()->format('Y-m-d'),
                 'tecId'             => $data['tecId'],
                 'observations'      => $data['description']
             ]);
 
-            if (!empty($data['changes']) && $asset->isComputer()) {
-                foreach ($data['changes'] as $change) {
+            // if (!empty($data['changes']) && $asset->isComputer()) {
+            //     foreach ($data['changes'] as $change) {
 
-                    $changeType = ChangeType::findOrFail($change['ChangeTypeId']); // Fetch change type details
+            //         $changeType = ChangeType::findOrFail($change['ChangeTypeId']); // Fetch change type details
 
-                    $handler = ChangeHandlerFactory::make($changeType->component);
-                    $handler->handle($asset, $changeType, $change);
+            //         $handler = ChangeHandlerFactory::make($changeType->component);
+            //         $handler->handle($asset, $changeType, $change);
 
-                    $this->logChange($asset, $maintenance, $changeType, $change);
-                }
-            }
+            //         $this->logChange($asset, $maintenance, $changeType, $change);
+            //     }
+            // }
 
             return $maintenance;
         });
@@ -49,25 +49,27 @@ class MaintenanceService
 
     public function autoMaintenance(Asset $asset, int $userId): Maintenance { // Automatic maintenance for change components in edit form
         return DB::transaction(function () use ($asset, $userId) {
-            Maintenance::create([
+            $maintenance = Maintenance::create([
                 'assetId'           => $asset->assetId,
-                'typeId'            => 'CORR',
+                'type'              => MaintenanceType::CORR,
                 'maintenanceDate'   => now(),
                 'tecId'             => $userId,
                 'observations'      => 'Actualización automática de componentes por medio de edición de activo'
             ]);
+
+            return $maintenance;
         });
     }
 
-    public function logChange(Asset $asset, Maintenance $maintenance, ChangeType $changeType, Array $change): void {
-            $maintenance->changes()->create([
-                    'assetId'       => $asset->assetId,
-                    'maintenanceId' => $maintenance->maintenanceId,
-                    'changeTypeId'  => $changeType->changeTypeId,
-                    'description'   => ChangeDescriptionBuilder::build($changeType, $change),
-                    'changeDate'    => now()
-            ]);
-    }
+    // public function logChange(Asset $asset, Maintenance $maintenance, ChangeType $changeType, Array $change): void {
+    //         $maintenance->changes()->create([
+    //                 'assetId'       => $asset->assetId,
+    //                 'maintenanceId' => $maintenance->maintenanceId,
+    //                 'changeTypeId'  => $changeType->changeTypeId,
+    //                 'description'   => ChangeDescriptionBuilder::build($changeType, $change),
+    //                 'changeDate'    => now()
+    //         ]);
+    // }
 
     public function update(Maintenance $maintenance, array $data) {
         

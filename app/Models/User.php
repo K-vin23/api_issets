@@ -108,10 +108,7 @@ class User extends Authenticatable
     public function scopeSearch($query, string $term) {
         return $query->where(function ($q) use ($term) {
             $q->where('userId', 'ILIKE', "%$term%")
-            ->orWhere('firstname', 'ILIKE', "%$term%")
-            ->orWhere('middlename', 'ILIKE', "%$term%")
-            ->orWhere('lastname', 'ILIKE', "%$term%")
-            ->orWhere('s_lastname', 'ILIKE', "%$term%");
+            ->orWhereRaw("concat_ws(' ', firstname, middlename, lastname, s_lastname) ILIKE ?", ["%$term%"]);
         });
     }
 

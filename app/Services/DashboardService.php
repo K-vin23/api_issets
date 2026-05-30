@@ -25,7 +25,7 @@ class DashboardService
         $assets = Asset::query()
                 ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
                 ->when($filters['areaId'] ?? null, fn($q, $v) => $q->where('areaId', $v))
-                ->when($filters['status'] ?? null, fn($q, $v) => $q->status($v))
+                ->when($filters['status'] ?? null, fn($q, $v) => $q->active($v))
                 ->count();
 
         $users = User::query()
@@ -72,13 +72,13 @@ class DashboardService
         return Area::query()
                 ->whereHas('assets', function ($q) use ($filters) {
                         $q->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
-                          ->when($filters['status'] ?? null, fn($q, $v) => $q->status($v));
+                          ->when($filters['status'] ?? null, fn($q, $v) => $q->active($v));
                 })
                 ->select('area')
                 ->withCount([
                     'assets as total' => function($q) use ($filters) {
                         $q->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
-                          ->when($filters['status'] ?? null, fn($q, $v) => $q->status($v));
+                          ->when($filters['status'] ?? null, fn($q, $v) => $q->active($v));
                     }
                 ])
                 ->orderByDesc('total')

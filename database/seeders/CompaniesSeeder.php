@@ -14,5 +14,9 @@ class CompaniesSeeder extends Seeder
         Company::create([
             'company' => 'WFM Informatica & Tecnologia',
         ]);
+
+        Company::create([
+            'company' => 'AKS Tecnologies',
+        ]);
     }
 }

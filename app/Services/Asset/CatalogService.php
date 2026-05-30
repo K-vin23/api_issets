@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Asset\Computer;
+namespace App\Services\Asset;
 
 // Enums
 // use App\Enums\ComponentType;

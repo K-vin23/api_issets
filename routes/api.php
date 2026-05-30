@@ -6,7 +6,6 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CityController;
@@ -142,12 +141,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [AssetController::class, 'store']);
 
         // Assign user to asset(solo tecnicos o administradores)
-        Route::post('/assign/{asset}', [AssetController::class, 'assignUser']);
+        Route::post('/assign/{asset}', [AssetController::class, 'assign']);
 
         // Removed assets routes
         Route::prefix('removed')->group(function () { 
             // Show all removed assets
             Route::get('/', [AssetController::class, 'removed']);
+
+            // Restore removed asset
+            Route::post('/restore/{asset}', [AssetController::class, 'restore']);
         });
         /*
             ┌──────────────────────────────────────────────────┐
@@ -170,10 +172,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{asset}', [AssetController::class, 'show']);
 
         // Update asset information and register changes in history (solo técnicos o administradores)
-        Route::patch('/{asset}', [ComputerController::class, 'update']);
+        Route::patch('/{asset}', [AssetController::class, 'update']);
 
         // Delete asset and register on deletion history (solo administradores o tecnicos)
-        Route::delete('/{asset}', [ComputerController::class, 'delete']);
+        Route::delete('/{asset}', [AssetController::class, 'delete']);
         /*
             ┌──────────────────────────────────────────────────┐
             │            Assets - catalog routes.              │

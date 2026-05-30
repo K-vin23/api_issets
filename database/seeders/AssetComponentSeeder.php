@@ -13,19 +13,31 @@ class AssetComponentSeeder extends Seeder
        AssetComponent::create([
             'assetId'       => 1,
             'componentId'   => 1
-
-        ]);
-
-        AssetComponent::create([
-            'assetId'       => 1,
-            'componentId'   => 2
-
         ]);
 
         AssetComponent::create([
             'assetId'       => 1,
             'componentId'   => 3
+        ]);
 
+        AssetComponent::create([
+            'assetId'       => 1,
+            'componentId'   => 4
+        ]);
+
+        AssetComponent::create([
+            'assetId'       => 5,
+            'componentId'   => 2
+        ]);
+
+        AssetComponent::create([
+            'assetId'       => 5,
+            'componentId'   => 3
+        ]);
+
+        AssetComponent::create([
+            'assetId'       => 5,
+            'componentId'   => 5
         ]);
         
     }

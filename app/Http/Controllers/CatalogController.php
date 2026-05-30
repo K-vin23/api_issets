@@ -11,7 +11,7 @@ use App\Models\Models;
 use App\Http\Requests\IndexCatalogRequest;
 use App\Http\Requests\StoreCatalogRequest;
 // Services
-use App\Services\Asset\Computer\CatalogService;
+use App\Services\Asset\CatalogService;
 // Resources
 use App\Http\Resources\ComponentResource;
 use App\Http\Resources\ModelsListResource;

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\AssignmentStatus;
+use App\Enums\AssignmentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
