@@ -15,12 +15,44 @@ class Company extends Model
 
     protected $fillable = [ 
         'company',
-        'status'
+        'isActive'
+    ];
+
+    protected $casts = [
+        'isActive'  => 'boolean'
     ];
 
     // Shortcuts
-    public function getStatusAttribute($value): string {
-        return $value === 'A' ? 'Active' : 'Inactive';
+    public function getStatusAttribute(): string {
+        return $this->isActive == true ? 'Active' : 'Inactive';
+    }
+
+    // Scopes
+    public function scopeSearch($query, string $term) {
+        $terms = explode(' ', trim($term));
+
+        return $query->where(function ($q) use ($terms){
+            foreach ($terms as $t ) {
+                $q->where(function ($sub) use ($t) {
+                    $sub->where('company', 'ILIKE', "%$t%")
+                    ->orWhere('companyId', 'ILIKE', "%$t%");
+                });
+            }
+        });
+    }
+
+    public function scopeActive($query, string $status) {
+        if($status == 'Active'){
+            return $query->where('isActive', true);
+        } else {
+            return $query->where('isActive', false);
+        }
+    }
+
+    public function scopePrincipalLocation($query, string $name) {
+        return $query->whereHas('locations', function ($q) use ($name) {
+            $q->where('locationName', $name);
+        });
     }
     
     // Relations
@@ -34,9 +66,5 @@ class Company extends Model
 
     public function assets() {
         return $this->hasMany(Asset::class, 'companyId', 'companyId');
-    }
-
-    public function computers() {
-        return $this->hasMany(Computer::class, 'companyId', 'companyId');
     }
 }

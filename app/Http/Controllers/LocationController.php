@@ -36,10 +36,10 @@ class LocationController extends Controller
 
         $this->authorize('create', $company);
 
-        $location = $this->companyService->newLocation($company, $request->validated());
+        $this->companyService->newLocation($company, $request->validated());
 
         return response()->json([
-            'data' => $location
+            'message' => "localizacion creada correctamente" 
         ], 201);
     }
 
@@ -47,10 +47,10 @@ class LocationController extends Controller
         
         $this->authorize('update', $location->company);
 
-        $location = $this->companyService->updateLocation($location, $request->validated());
+        $this->companyService->updateLocation($location, $request->validated());
 
         return response()->json([
-            'data' => $location
+            'message' => "localizacion actualizada correctamente"
         ], 200);
     }
 

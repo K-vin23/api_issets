@@ -31,7 +31,7 @@ class UserPolicy
     }
 
     public function restore(User $authUser, User $user) {
-        return in_array($authUser->rolId, ['TEC', 'ADM']);
+        return in_array($authUser->rolId, ['ADM']);
     }
 
     public function forceDelete(User $authUser, User $user) {

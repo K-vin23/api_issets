@@ -105,14 +105,14 @@ class AssetController extends Controller
 
         $this->assetService->delete($asset, $validated['removalReason'], auth()->id());
 
-        return response()->json(204);
+        return response(200);
     }
 
     public function restore(Asset $asset) {
         $this->authorize('restore', $asset);
 
-        $this->assetService->restore($asset);
+        $this->assetService->restore($asset, auth()->id());
 
-        return response()->json(['message' => 'Activo actualizado exitosamente'], 200);
+        return response()->json(['message' => 'Activo restaurado exitosamente'], 200);
     }
 }

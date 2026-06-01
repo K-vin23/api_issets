@@ -21,6 +21,21 @@ class DashboardService
         ];
     }
 
+    public function upcomingMaintenances (array $filters = []) {
+        $days = $filters['maintenanceDays'] ?? 30;
+        return Asset::query()
+                ->active('active')
+                ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
+                ->whereBetween('nextMaintenance', [now(), now()->addDays($days)])
+                ->whereNotNull('nextMaintenance')
+                ->orderBy('nextMaintenance')
+                ->limit(5)
+                ->with([
+                    'assetModels.brands'
+                ])
+                ->get();
+    }
+
     protected function totals (array $filters): array {
         $assets = Asset::query()
                 ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
@@ -33,6 +48,7 @@ class DashboardService
                 ->count();
 
         $maintenances = Maintenance::query()
+                        ->when($filters['companyId'] ?? null, fn($q, $v) => $q->company($v))
                         ->count();
         
         // Próximos mantenimientos (todos los pendientes)
@@ -50,22 +66,6 @@ class DashboardService
             'maintenances'      => $maintenances,
             'nextMaintenances'  => $nextMaintenances
         ];
-    }
-
-    protected function upcomingMaintenances (array $filters) {
-        return DB::table('maintenances')
-                ->join('assets', 'assets.assetId', '=', 'maintenances.assetId')
-                ->join('asset_types', 'asset_types.typeId', '=', 'assets.typeId')
-                ->join('models', 'models.modelId', '=', 'assets.modelId')
-                ->when($filters['companyId'] ?? null, fn($q, $v) => $q->where('assets.companyId', $v))
-                ->whereBetween('assets.nextMaintenance', [now(), now()->addDays(30)])
-                ->orderBy('assets.nextMaintenance')
-                ->limit(5)
-                ->get([
-                    'asset_types.assetType as assetType',
-                    DB::raw('models."brandId" || \' \' || models."modelFamily" || \' \' || models."modelSerie"  as model'),
-                    'assets.internalId as internalId',
-                ]);
     }
 
     protected function assetByArea(array $filters) {

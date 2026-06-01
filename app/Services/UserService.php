@@ -31,11 +31,11 @@ class UserService
         ])
         ->orderBy('firstname')
         ->paginate($perPage);
-
     }
 
     public function search(array $search){
         return User::query()
+        ->active()
         ->when($search['search'], fn($q, $v) => $q->search($v))
         ->orderBy('firstname')
         ->get();
@@ -58,7 +58,7 @@ class UserService
         ->get();
     }
 
-        public function me(User $user): User {
+    public function me(User $user): User {
         return $user->load([
             'company',
             'area',
@@ -134,14 +134,21 @@ class UserService
     }
 
     public function delete(User $user, int $performedBy) {
-
         DB::transaction(function () use ($user, $performedBy) {
             $user->update([
                 'isActive' => false
             ]);
             $user->refresh();
 
-            $this->assignService->unassignAllFromUser($user, $performedBy);
+            $this->assignService->unassignAll($user, $performedBy);
+        });
+    }
+
+    public function restore(User $user) {
+        DB::transaction(function () use ($user) {
+            $user->update([
+                'isActive'  => true
+            ]);
         });
     }
 }

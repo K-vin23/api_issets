@@ -14,9 +14,10 @@ class IndexDashboardRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'companyId' => 'nullable|integer|exists:companies,companyId',
-            'areaId'    => 'nullable|integer|exists:areas,areaId',
-            'status'    => 'nullable|string'
+            'companyId'         => 'nullable|integer|exists:companies,companyId',
+            'areaId'            => 'nullable|integer|exists:areas,areaId',
+            'status'            => 'nullable|string',
+            'maintenanceDays'   => 'nullable|integer'
         ];
     }
 }

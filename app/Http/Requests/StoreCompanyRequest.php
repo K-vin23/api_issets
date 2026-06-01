@@ -14,7 +14,8 @@ class StoreCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'company' => 'required|string|max:100'
+            'company' => 'required|string|max:100',
+            'cityId'  => 'required|string|exists:cities,cityId'
         ];
     }
 

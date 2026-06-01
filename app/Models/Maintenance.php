@@ -23,12 +23,19 @@ class Maintenance extends Model
     ];
 
     protected $casts = [
-        'type'  => MaintenanceType::class
+        'type'              => MaintenanceType::class,
+        'maintenanceDate'   => 'date'
     ];
 
     // Scopes
     public function scopeType($query, string $type) {
         return $query->where('type', $type);
+    }
+
+    public function scopeCompany($query, int $companyId) {
+        return $query->whereHas('asset', function ($q) use ($companyId) {
+            $q->where('companyId', $companyId);
+        });
     }
 
     public function scopeDate($query, string $date) {

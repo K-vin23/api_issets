@@ -8,6 +8,9 @@ use App\Models\Asset;
 use App\Http\Requests\IndexDashboardRequest;
 // Services
 use App\Services\DashboardService;
+// Resources
+use App\Http\Resources\DashboardResource;
+use App\Http\Resources\UpcomingMaintenanceResource;
 
 class DashboardController extends Controller
 {
@@ -18,36 +21,17 @@ class DashboardController extends Controller
     public function index(IndexDashboardRequest $request) {
         $this->authorize('viewAny', Asset::class);
 
-        return response()->json(
-            $this->dashboardService->index($request->validated())
-        );
+        $dash = $this->dashboardService->index($request->validated());
+
+        return new DashboardResource($dash);
     }
 
-    // public function activos(Request $request)
-    // {
-    //     $company = $request->query('id_empresa');
-    //     $area = $request->query('id_area');
+    public function upcomings(IndexDashboardRequest $request) {
+        $this->authorize('viewAny', Asset::class);
 
-    //     $query = Activo::query();
+        $dash = $this->dashboardService->upcomingMaintenances($request->validated());
 
-    //     if($company) {
-    //         $query->where('id_empresa', $company);
-    //     }
-
-    //     if($area) {
-    //         $query->where('id_area', $area);
-    //     }
-
-    //     return response()->json([
-    //         'total' => $query->count(),
-    //         'byCompany' => Activo::select('id_empresa')
-    //             ->selectRaw('COUNT(*) AS total')
-    //             ->groupBy('id_empresa')
-    //             ->get(),
-    //         'byArea' => Activo::select('id_area')
-    //             ->selectRaw('COUNT(*) AS total')
-    //             ->groupBy('id_area')
-    //             ->get(),
-    //     ]);
-    // }
+        return UpcomingMaintenanceResource::collection($dash);
+    }
+    
 }

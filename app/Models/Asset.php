@@ -51,6 +51,15 @@ class Asset extends Model
         return $this->type?->isUps() ?? false;
     }
 
+    public function getDaysUntilMaintenanceAttribute(): int {
+        return now()
+            ->startOfDay()
+            ->diffInDays(
+                $this->nextMaintenance->startOfDay(),
+                false
+            );
+    }
+
     // Scopes
 
     public function scopeCompany($query, int $companyId) {

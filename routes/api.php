@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
         └──────────────────────────────────────────────────┘
     */
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard/upcomings', [DashboardController::class, 'upcomings']);
     /*
         ┌──────────────────────────────────────────────────┐
         │                   Cities route                   │
@@ -77,7 +78,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::patch('/{company}', [CompanyController::class, 'update']);
 
-        Route::delete('/{company}', [CompanyController::class, 'delete']); // Pending
+        Route::delete('/{company}', [CompanyController::class, 'delete']);
+
+        Route::post('/restore/{company}', [CompanyController::class, 'restore']);
         /*
             ┌──────────────────────────────────────────────────┐
             │            Locations managment routes            │
@@ -124,6 +127,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Delete user (solo administradores)
         Route::delete('/{user}', [UserController::class, 'destroy']);
+
+        // Restore user (solo administradores)
+        Route::post('/restore/{user}', [UserController::class, 'restore']);
     });
     /*
         ┌──────────────────────────────────────────────────┐

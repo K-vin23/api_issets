@@ -85,10 +85,8 @@ class AssetAssignationService
             $assets = Asset::where('assignedUser', $user->userId)->get();
             
             foreach ($assets as $asset) {
-                $this->unassign($asset);
+                $this->unassign($asset, $register);
             }
         }
-
-        
     }
 }

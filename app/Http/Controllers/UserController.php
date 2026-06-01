@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 // Models
 use App\Models\User;
-// Enums
-use App\Enums\Rol;
 // Requests
 use Illuminate\Http\Request;
 use App\Http\Requests\IndexUserRequest;
@@ -23,10 +21,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function __construct(
-        protected UserService $userService
-    )
-    {
+    public function __construct( protected UserService $userService) {
         $this->middleware('auth:sanctum');
     }
 
@@ -72,18 +67,16 @@ class UserController extends Controller
     }
 
     public function store(StoreUserRequest $request) {
-            $this->authorize('create', User::class);
+        $this->authorize('create', User::class);
 
-            $user = $this->userService->create($request->validated(), auth()->id());
-            return response()->json([
-                'message' => 'Usuario creado correctamente',
-                'data' => $user
-            ], 201);
+        $user = $this->userService->create($request->validated(), auth()->id());
+        return response()->json([
+            'message' => 'Usuario creado correctamente',
+            'data' => $user
+        ], 201);
     }
 
     public function update(UpdateUserRequest $request, User $user) {
-
-
         $this->authorize('update', $user);
 
         $user = $this->userService->update($user, $request->validated());
@@ -119,11 +112,18 @@ class UserController extends Controller
     }
 
     public function destroy(User $user) {
-
         $this->authorize('delete', $user);
 
         $this->userService->delete($user, auth()->id());
 
-        return response()->json([], 204); 
+        return response()->json(204); 
+    }
+
+    public function restore(User $user) {
+        $this->authorize('restore', $user);
+
+        $this->userService->restore($user);
+
+        return response()->json(202);
     }
 }

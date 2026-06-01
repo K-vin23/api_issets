@@ -158,10 +158,12 @@ class AssetService
         }
     }
 
-    public function restore(Asset $asset) {
-        DB::transaction(function () use ($asset) {
+    public function restore(Asset $asset, int $userId) {
+        DB::transaction(function () use ($asset, $userId) {
             $asset->update([
-                'isActive' => true
+                'isActive'      => true,
+                'lastupdate'    => now(),
+                'updatedBy'     => $userId
             ]);
         });
     }
