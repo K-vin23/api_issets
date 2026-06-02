@@ -100,9 +100,9 @@ class CompanyService
 
     public function newLocation(Company $company, array $data){
         $location = new Location();
-        $location->companyId = $company->companyId;
-        $location->cityId =  $data['cityId'];
-        $location->locationName = $data['locationName'];
+        $location->companyId = (int) $company->companyId;
+        $location->cityId =  (string) $data['cityId'];
+        $location->locationName = (string) $data['locationName'];
         $location->save();
     }
 
