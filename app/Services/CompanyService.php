@@ -99,11 +99,10 @@ class CompanyService
     }
 
     public function newLocation(Company $company, array $data){
-            Location::create([
-                'companyId'     =>  $company->companyId,
-                'cityId'        =>  $data['cityId'],
-                'locationName'  =>  $data['locationName']
-            ]);
+        $location = new Location();
+        $location->companyId = $company->companyId;
+        $location->cityId =  $data['cityId'];
+        $locations->locationName = $data['locationName'];
     }
 
     public function updateLocation(Location $location, array $data) {

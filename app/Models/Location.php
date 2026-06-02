@@ -13,7 +13,6 @@ class Location extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'locationId',
         'companyId',
         'cityId',
         'locationName'
