@@ -102,7 +102,8 @@ class CompanyService
         $location = new Location();
         $location->companyId = $company->companyId;
         $location->cityId =  $data['cityId'];
-        $locations->locationName = $data['locationName'];
+        $location->locationName = $data['locationName'];
+        $location->save();
     }
 
     public function updateLocation(Location $location, array $data) {
