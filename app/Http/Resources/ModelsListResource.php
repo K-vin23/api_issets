@@ -13,6 +13,8 @@ class ModelsListResource extends JsonResource
     {
         return [
             'modelId'       => $this->modelId,
+            'typeId'        => $this->typeId,
+            'brandId'       => $this->brandId,
             'brand'         => $this->brands->brand,
             'model'         => $this->model_name,
             'processor'     => $this->modelComponents

@@ -13,6 +13,7 @@ class ModelsResource extends JsonResource
         return [
             'modelId'   => $this->modelId,
             'brand'     => $this->brands?->brand,
+            'brandId'   => $this->brandId,
             'model'     => $this->model_name,
         ];
     }

@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\ComputerModel;
+use App\Models\Models;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -14,7 +14,7 @@ class CatalogPolicy
         return in_array($user->rolId, ['TEC', 'ADM']);
     }
 
-    public function view(User $user, ComputerModel $computerModel): bool
+    public function view(User $user, Models $model): bool
     {
         return in_array($user->rolId, ['TEC', 'ADM']);
     }
@@ -24,22 +24,22 @@ class CatalogPolicy
         return in_array($user->rolId, ['TEC', 'ADM']);
     }
 
-    public function update(User $user, ComputerModel $computerModel): bool
+    public function update(User $user, Models $model): bool
     {
         return in_array($user->rolId, ['TEC', 'ADM']);
     }
 
-    public function delete(User $user, ComputerModel $computerModel): bool
+    public function delete(User $user, Models $model): bool
     {
         return in_array($user->rolId, ['TEC', 'ADM']);
     }
 
-    public function restore(User $user, ComputerModel $computerModel): bool
+    public function restore(User $user, Models $model): bool
     {
         return in_array($user->rolId, ['TEC', 'ADM']);
     }
 
-    public function forceDelete(User $user, ComputerModel $computerModel): bool
+    public function forceDelete(User $user, Models $model): bool
     {
         return in_array($user->rolId, ['TEC', 'ADM']);
     }

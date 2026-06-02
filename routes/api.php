@@ -187,19 +187,35 @@ Route::middleware('auth:sanctum')->group(function () {
             │            Assets - catalog routes.              │
             └──────────────────────────────────────────────────┘
         */
-            Route::prefix('catalog')->group(function () { 
+            Route::prefix('catalog')->group(function () {
 
-                // Get catalog
-                Route::get('/models', [CatalogController::class, 'index']);
+                Route::prefix('models')->group(function () {
+                    // Get models catalog
+                    Route::get('/', [CatalogController::class, 'modelIndex']);
 
-                // Insert model in the catalog
-                Route::post('/models', [CatalogController::class, 'store']);
+                    // Insert model in the catalog
+                    Route::post('/', [CatalogController::class, 'storeModel']);
 
-                // Update model in the catalog
-                Route::patch('/models/{models}', [CatalogController::class, 'update']);
+                    // Assign component to model
+                    Route::post('/assign/{models}', [CatalogController::class, 'assignComponent']);
 
-                // Get brands catalog
-                Route::get('/brands', [CatalogController::class, 'brands']);
+                    // get specific model
+                    Route::get('/{models}', [CatalogController::class, 'showModel']);
+
+                    // Update model in the catalog
+                    Route::patch('/{models}', [CatalogController::class, 'updateModel']);
+                });
+
+                // Get types of assets - Me lo agradeceras en un futuro. -K
+                Route::get('/types', [CatalogController::class, 'types']);
+
+                Route::prefix('brands')->group(function () {
+                    // Get brands catalog
+                    Route::get('/', [CatalogController::class, 'brands']);
+
+                    // Insert brands in the catalog
+                    Route::post('/', [CatalogController::class, 'storeBrand']);
+                });
                 
                 // Get processors catalog
                 Route::get('/processors', [CatalogController::class, 'processors']);
@@ -210,8 +226,25 @@ Route::middleware('auth:sanctum')->group(function () {
                 // Get hard disks catalog
                 Route::get('/disks', [CatalogController::class, 'disks']);
 
+                Route::prefix('component')->group(function () {
+                    // Get ALL components
+                    Route::get('/', [CatalogController::class, 'components']);
+
+                    // Insert any component in components catalog
+                    Route::post('/', [CatalogController::class, 'storeComponent']);
+
+                    // Get components categories.
+                    Route::get('/categories', [CatalogController::class, 'categories']);
+
+                    // Get components types.
+                    Route::get('/types', [CatalogController::class, 'compTypes']);
+                });
+
                 // Get licenses catalog
                 Route::get('/licenses', [CatalogController::class, 'licenses']);
+
+                // Insert licenses catalog
+                // Route::post('/licenses', [CatalogController::class, 'licenses']);
 
             });
     });
